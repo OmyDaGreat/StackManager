@@ -1,5 +1,9 @@
 package xyz.malefic.stackmanager
 
+import io.undertow.Undertow as RawUndertow
+import io.undertow.server.handlers.BlockingHandler as UndertowBlockingHandler
+import org.http4k.core.HttpHandler
+import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.OK
@@ -8,9 +12,27 @@ import org.http4k.filter.CorsPolicy
 import org.http4k.filter.ServerFilters
 import org.http4k.routing.bind
 import org.http4k.routing.routes
-import org.http4k.core.Method.GET
-import org.http4k.server.Undertow
+import org.http4k.server.Http4kServer
+import org.http4k.server.Http4kUndertowHttpHandler
+import org.http4k.server.ServerConfig
 import org.http4k.server.asServer
+
+/** Custom ServerConfig that binds Undertow to a specific host (not just 0.0.0.0). */
+class BoundUndertow(private val port: Int, private val host: String) : ServerConfig {
+    override fun toServer(http: HttpHandler): Http4kServer = object : Http4kServer {
+        private val server =
+            RawUndertow
+                .builder()
+                .addHttpListener(port, host, UndertowBlockingHandler(Http4kUndertowHttpHandler(http)))
+                .build()
+
+        override fun start() = apply { server.start() }
+
+        override fun stop() = apply { server.stop() }
+
+        override fun port() = port
+    }
+}
 
 fun main() {
     val cors = ServerFilters.Cors(CorsPolicy.UnsafeGlobalPermissive)
@@ -22,13 +44,14 @@ fun main() {
         },
     )
 
-    val protectedRoutes = cors
-        .then(bearerAuthFilter)
-        .then(stackRoutes())
+    val protectedRoutes =
+        cors
+            .then(bearerAuthFilter)
+            .then(stackRoutes())
 
     val app = cors.then(routes(publicRoutes, protectedRoutes))
 
-    val server = app.asServer(Undertow(Config.port)).start()
+    val server = app.asServer(BoundUndertow(Config.port, Config.bindHost)).start()
     println("StackManager backend started on ${Config.bindHost}:${Config.port}")
     server.block()
 }

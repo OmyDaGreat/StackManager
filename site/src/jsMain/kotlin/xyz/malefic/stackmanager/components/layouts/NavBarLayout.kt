@@ -281,4 +281,7 @@ fun NavBarLayout(content: @Composable () -> Unit) {
 }
 
 private fun Pages.isCurrentPage(currentRoute: String): Boolean =
-    currentRoute == route
+    when (this) {
+        Pages.STACKS -> currentRoute == route || currentRoute == "" || currentRoute == "/"
+        else -> currentRoute == route
+    }
