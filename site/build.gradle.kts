@@ -4,9 +4,10 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kobweb.application)
+    alias(libs.plugins.kotlin.serialization)
 }
 
-group = "xyz.malefic.staticsite"
+group = "xyz.malefic.stackmanager"
 version = "1.0-SNAPSHOT"
 
 kobweb {
@@ -18,13 +19,15 @@ kobweb {
 }
 
 kotlin {
-    configAsKobwebApplication("staticsite")
+    configAsKobwebApplication("stackmanager")
 
     sourceSets {
         jsMain.dependencies {
             implementation(libs.bundles.compose)
             implementation(libs.bundles.kobweb)
             implementation(libs.bundles.silk.icons)
+            implementation(libs.kobwebx.serialization.kotlinx)
+            implementation(libs.kotlinx.serialization.json)
         }
     }
 }

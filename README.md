@@ -1,53 +1,87 @@
-This is a [Kobweb](https://github.com/varabyte/kobweb) project bootstrapped with the `app/empty` template.
+# Stack Manager
 
-This template is useful if you already know what you're doing and just want a clean slate. By default, it
-just creates a blank home page (which prints to the console so you can confirm it's working)
+A Tailscale-only Docker Compose stack manager: a Kotlin/http4k backend API + Kobweb frontend, designed to run on a Raspberry Pi (or any server) and be accessed securely over your Tailscale network.
 
-If you are still learning, consider instantiating the `app` template (or one of the examples) to see actual,
-working projects.
+## Architecture
 
-## Getting Started
+- **backend/** — Kotlin/JVM HTTP API (http4k + Undertow). Manages Docker Compose stacks under `/srv/compose/<stack-name>/compose.yml`.
+- **site/** — Kobweb (Kotlin/JS + Compose HTML) frontend SPA. Stores the bearer token and backend URL in `localStorage`.
 
-First, run the development server by typing the following command in a terminal under the `site` folder:
+## Backend Setup
 
-```bash
-$ cd site
-$ kobweb run
-```
+### Prerequisites
 
-Open [http://localhost:8080](http://localhost:8080) with your browser to see the result.
+- Docker + Docker Compose plugin on the host
+- Java 21+
+- The server accessible on your Tailscale IP
 
-You can use any editor you want for the project, but we recommend using **IntelliJ IDEA Community Edition** downloaded
-using the [Toolbox App](https://www.jetbrains.com/toolbox-app/).
+### Environment Variables
 
-Press `Q` in the terminal to gracefully stop the server.
+| Variable             | Default       | Description                            |
+|----------------------|---------------|----------------------------------------|
+| `STACKMGR_TOKEN`     | **required**  | Bearer token for API authentication    |
+| `STACKMGR_BIND_HOST` | `127.0.0.1`   | Host/IP to bind (use your Tailscale IP)|
+| `STACKMGR_PORT`      | `8080`        | Port to listen on                      |
 
-### Live Reload
+### Run with Docker Compose (recommended)
 
-Feel free to edit / add / delete new components, pages, and API endpoints! When you make any changes, the site will
-indicate the status of the build and automatically reload when ready.
-
-## Exporting the Project
-
-When you are ready to ship, you should shutdown the development server and then export the project using:
+1. Copy `deploy/compose.yml` to your server.
+2. Copy `deploy/.env.example` to `deploy/.env` and set a strong `STACKMGR_TOKEN`.
+3. Edit `deploy/compose.yml` to replace `100.x.y.z` with your actual Tailscale IP.
 
 ```bash
-kobweb export
+cd deploy
+cp .env.example .env
+# edit .env and compose.yml with your Tailscale IP and token
+docker compose up -d
 ```
 
-When finished, you can run a Kobweb server in production mode:
+### Build from source
 
 ```bash
-kobweb run --env prod
+./gradlew :backend:installDist
+# Binary at backend/build/install/backend/bin/backend
+STACKMGR_TOKEN=mysecret STACKMGR_BIND_HOST=100.x.y.z ./backend/build/install/backend/bin/backend
 ```
 
-If you want to run this command in the Cloud provider of your choice, consider disabling interactive mode since nobody
-is sitting around watching the console in that case anyway. To do that, use:
+## Frontend Setup
+
+The frontend is a Kobweb static site. Build and export with the Kobweb CLI:
 
 ```bash
-kobweb run --env prod --notty
+cd site
+kobweb export --layout static
 ```
 
-Kobweb also supports exporting to a static layout which is compatible with static hosting providers, such as GitHub
-Pages, Netlify, Firebase, any presumably all the others. You can read more about that approach here:
-https://bitspittle.dev/blog/2022/staticdeploy
+Serve the exported `site/.kobweb/site/` directory from any static host (GitHub Pages, Nginx, Caddy, etc.).
+
+On first visit, go to `/login` to set:
+- **Bearer Token** — must match `STACKMGR_TOKEN` on the backend
+- **Backend Base URL** — your Tailscale URL, e.g. `http://100.x.y.z:8080`
+
+## API Endpoints
+
+All endpoints require `Authorization: Bearer <token>` header.
+
+| Method | Path                          | Description                  |
+|--------|-------------------------------|------------------------------|
+| GET    | `/api/health`                 | Health check                 |
+| GET    | `/api/stacks`                 | List all stacks               |
+| GET    | `/api/stacks/{name}`          | Get stack compose YAML        |
+| PUT    | `/api/stacks/{name}`          | Create/update stack           |
+| POST   | `/api/stacks/{name}/deploy`   | `docker compose up -d`        |
+| POST   | `/api/stacks/{name}/stop`     | `docker compose down`         |
+| POST   | `/api/stacks/{name}/pull`     | `docker compose pull`         |
+| GET    | `/api/stacks/{name}/logs`     | Get logs (`?tail=N`)          |
+
+Stack names must match `^[a-z0-9-]+$`. Compose files are stored at `/srv/compose/<name>/compose.yml`.
+
+## Development
+
+```bash
+# Backend
+./gradlew :backend:build
+
+# Frontend (requires kobweb CLI)
+cd site && kobweb run
+```
