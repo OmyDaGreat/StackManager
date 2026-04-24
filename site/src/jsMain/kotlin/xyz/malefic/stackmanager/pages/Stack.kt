@@ -65,7 +65,7 @@ fun StackPage() {
         }
     }
 
-    suspend fun doAction(path: String, method: String = "POST", body: String? = null): String =
+    suspend fun executeStackCommand(path: String, method: String = "POST", body: String? = null): String =
         try {
             val resp = fetchJson(path, method, body).await()
             val result = json.decodeFromString<CommandResponse>(resp)
@@ -143,7 +143,7 @@ fun StackPage() {
                         onClick {
                             MainScope().launch {
                                 status = "Deploying..."
-                                status = doAction("/api/stacks/$name/deploy")
+                                status = executeStackCommand("/api/stacks/$name/deploy")
                             }
                         }
                         style { property("padding", "8px 16px"); property("margin-right", "8px") }
@@ -153,7 +153,7 @@ fun StackPage() {
                         onClick {
                             MainScope().launch {
                                 status = "Stopping..."
-                                status = doAction("/api/stacks/$name/stop")
+                                status = executeStackCommand("/api/stacks/$name/stop")
                             }
                         }
                         style { property("padding", "8px 16px"); property("margin-right", "8px") }
@@ -163,7 +163,7 @@ fun StackPage() {
                         onClick {
                             MainScope().launch {
                                 status = "Pulling..."
-                                status = doAction("/api/stacks/$name/pull")
+                                status = executeStackCommand("/api/stacks/$name/pull")
                             }
                         }
                         style { property("padding", "8px 16px"); property("margin-right", "8px") }
