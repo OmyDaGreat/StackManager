@@ -127,6 +127,10 @@ fun StackPage() {
                     onClick {
                         MainScope().launch {
                             if (effectiveName.isBlank()) { status = "Stack name is required"; return@launch }
+                            if (!effectiveName.matches(Regex("^[a-z0-9-]+$"))) {
+                                status = "Invalid stack name (use only lowercase letters, digits, hyphens)"
+                                return@launch
+                            }
                             val body = json.encodeToString(PutStackRequest(composeYaml))
                             status = try {
                                 fetchJson("/api/stacks/$effectiveName", "PUT", body).await()

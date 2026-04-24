@@ -24,11 +24,11 @@ private fun constantTimeEquals(a: String, b: String): Boolean {
     val aBytes = a.toByteArray()
     val bBytes = b.toByteArray()
     val maxLen = maxOf(aBytes.size, bBytes.size)
-    var result = aBytes.size xor bBytes.size
+    var diff = aBytes.size xor bBytes.size
     for (i in 0 until maxLen) {
         val aByte = if (i < aBytes.size) aBytes[i].toInt() else 0
         val bByte = if (i < bBytes.size) bBytes[i].toInt() else 0
-        result = result or (aByte xor bByte)
+        diff = diff or (aByte xor bByte)
     }
-    return result == 0
+    return diff == 0
 }
