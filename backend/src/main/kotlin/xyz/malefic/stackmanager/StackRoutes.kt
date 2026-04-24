@@ -36,10 +36,6 @@ private fun jsonResponse(status: org.http4k.core.Status, body: String) =
     Response(status).body(body).header("Content-Type", "application/json")
 
 fun stackRoutes() = routes(
-    "/api/health" bind GET to { _: Request ->
-        jsonResponse(OK, """{"status":"ok"}""")
-    },
-
     "/api/stacks" bind GET to { _: Request ->
         val stacks = listStacks()
         jsonResponse(OK, json.encodeToString(StackListResponse(stacks)))

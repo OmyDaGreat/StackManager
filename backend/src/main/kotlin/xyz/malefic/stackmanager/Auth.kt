@@ -8,13 +8,27 @@ import org.http4k.core.Status.Companion.UNAUTHORIZED
 
 val bearerAuthFilter = Filter { next: HttpHandler ->
     { req: Request ->
-        val auth = req.header("Authorization")
-        val token = Config.token
-        if (auth == "Bearer $token") {
+        val auth = req.header("Authorization") ?: ""
+        val expected = "Bearer ${Config.token}"
+        if (constantTimeEquals(auth, expected)) {
             next(req)
         } else {
             Response(UNAUTHORIZED).body("""{"error":"Unauthorized"}""")
                 .header("Content-Type", "application/json")
         }
     }
+}
+
+/** Constant-time string comparison to prevent timing attacks. */
+private fun constantTimeEquals(a: String, b: String): Boolean {
+    val aBytes = a.toByteArray()
+    val bBytes = b.toByteArray()
+    val maxLen = maxOf(aBytes.size, bBytes.size)
+    var result = aBytes.size xor bBytes.size
+    for (i in 0 until maxLen) {
+        val aByte = if (i < aBytes.size) aBytes[i].toInt() else 0
+        val bByte = if (i < bBytes.size) bBytes[i].toInt() else 0
+        result = result or (aByte xor bByte)
+    }
+    return result == 0
 }

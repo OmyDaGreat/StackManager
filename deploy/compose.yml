@@ -8,7 +8,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - STACKMGR_TOKEN=${STACKMGR_TOKEN}
-      - STACKMGR_BIND_HOST=100.x.y.z
+      - STACKMGR_BIND_HOST=YOUR_TAILSCALE_IP  # Replace with your Tailscale IP, e.g. 100.64.0.1
       - STACKMGR_PORT=8080
     ports:
-      - "100.x.y.z:8080:8080"
+      - "YOUR_TAILSCALE_IP:8080:8080"  # Replace YOUR_TAILSCALE_IP with your actual Tailscale IP
