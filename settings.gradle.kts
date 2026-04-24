@@ -11,6 +11,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "staticsite"
+rootProject.name = "stackmanager"
 
 include(":site")
+include(":backend")

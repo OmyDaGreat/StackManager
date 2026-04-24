@@ -1,4 +1,4 @@
-package xyz.malefic.staticsite.components.layouts
+package xyz.malefic.stackmanager.components.layouts
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,7 +31,7 @@ import com.varabyte.kobweb.silk.style.toModifier
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
-import xyz.malefic.staticsite.util.Pages
+import xyz.malefic.stackmanager.util.Pages
 import com.varabyte.kobweb.compose.ui.graphics.Color as Kolor
 
 // Silk-themed styles
@@ -173,14 +173,12 @@ fun NavBarLayout(content: @Composable () -> Unit) {
     val currentRoute = ctx.route.path
     var isDropdownOpen by remember { mutableStateOf(false) }
 
-    // Configuration: Maximum number of pages to show before overflow
     val maxVisiblePages = 4
     val allPages = Pages.entries
     val visiblePages = allPages.take(maxVisiblePages)
     val overflowPages = allPages.drop(maxVisiblePages)
 
     Column(Modifier.fillMaxSize()) {
-        // Navigation Bar
         Box(
             NavBarStyle.toModifier(),
             contentAlignment = Alignment.Center,
@@ -192,14 +190,11 @@ fun NavBarLayout(content: @Composable () -> Unit) {
                     .padding(0.px, 20.px),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                // Brand/Logo area (optional)
                 Box(Modifier.flexGrow(1)) {
-                    // Developers can customize this area
+                    // Brand area — customize as needed
                 }
 
-                // Navigation Links
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Visible navigation items
                     visiblePages.forEach { page ->
                         val isActive = page.isCurrentPage(currentRoute)
                         val pageRoute = page.route
@@ -217,10 +212,8 @@ fun NavBarLayout(content: @Composable () -> Unit) {
                         }
                     }
 
-                    // Overflow dropdown (only show if there are overflow pages)
                     if (overflowPages.isNotEmpty()) {
                         Box(DropdownStyle.toModifier()) {
-                            // Dropdown button
                             Div(
                                 attrs = {
                                     onClick { isDropdownOpen = !isDropdownOpen }
@@ -232,7 +225,6 @@ fun NavBarLayout(content: @Composable () -> Unit) {
                                 ) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text("More")
-                                        // Simple arrow indicator
                                         Box(
                                             Modifier
                                                 .margin(left = 8.px)
@@ -244,7 +236,6 @@ fun NavBarLayout(content: @Composable () -> Unit) {
                                 }
                             }
 
-                            // Dropdown content
                             if (isDropdownOpen) {
                                 Box(DropdownContentStyle.toModifier()) {
                                     Column {
@@ -276,26 +267,21 @@ fun NavBarLayout(content: @Composable () -> Unit) {
             }
         }
 
-        // Page content
         Box(Modifier.fillMaxSize()) {
             content()
         }
     }
 
-    // Close dropdown when clicking outside
     LaunchedEffect(isDropdownOpen) {
         if (isDropdownOpen) {
-            // You might want to add a click outside listener here
-            // For simplicity, we'll just auto-close after a delay
             kotlinx.coroutines.delay(5000)
             isDropdownOpen = false
         }
     }
 }
 
-// Helper functions
 private fun Pages.isCurrentPage(currentRoute: String): Boolean =
     when (this) {
-        Pages.INDEX -> currentRoute == "" || currentRoute == "/"
+        Pages.STACKS -> currentRoute == "/stacks" || currentRoute == "" || currentRoute == "/"
         else -> currentRoute == route
     }

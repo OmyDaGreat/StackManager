@@ -1,9 +1,9 @@
-package xyz.malefic.staticsite.util
+package xyz.malefic.stackmanager.util
 
 enum class Pages(
     val value: String,
     val route: String,
 ) {
-    INDEX("Index", "/"),
+    STACKS("Stacks", "/stacks"),
     ABOUT("About", "/about"),
 }

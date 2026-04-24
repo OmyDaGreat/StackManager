@@ -1,4 +1,4 @@
-package xyz.malefic.staticsite.pages
+package xyz.malefic.stackmanager.pages
 
 import androidx.compose.runtime.Composable
 import com.varabyte.kobweb.compose.foundation.layout.Box
@@ -15,9 +15,9 @@ import org.jetbrains.compose.web.dom.Text
 fun AboutPage() {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Span {
-            Text("THIS TEMPLATE WAS CREATED BY ")
+            Text("STACK MANAGER — built by ")
             Link("https://github.com/OmyDaGreat", "MALEFIC")
-            Text("!")
+            Text(". Manage Docker Compose stacks on your Pi over Tailscale.")
         }
     }
 }
