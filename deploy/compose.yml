@@ -8,7 +8,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - STACKMGR_TOKEN=${STACKMGR_TOKEN}
-      - STACKMGR_BIND_HOST=YOUR_TAILSCALE_IP  # Replace with your Tailscale IP, e.g. 100.64.0.1
+      # Replace with your Pi's Tailscale IP (run: tailscale ip -4)
+      - STACKMGR_BIND_HOST=100.x.y.z
       - STACKMGR_PORT=8080
     ports:
-      - "YOUR_TAILSCALE_IP:8080:8080"  # Replace YOUR_TAILSCALE_IP with your actual Tailscale IP
+      # Only bind on your Tailscale IP so the port is never exposed publicly
+      - "100.x.y.z:8080:8080"

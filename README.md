@@ -7,79 +7,183 @@ A Tailscale-only Docker Compose stack manager: a Kotlin/http4k backend API + Kob
 - **backend/** — Kotlin/JVM HTTP API (http4k + Undertow). Manages Docker Compose stacks under `/srv/compose/<stack-name>/compose.yml`.
 - **site/** — Kobweb (Kotlin/JS + Compose HTML) frontend SPA. Stores the bearer token and backend URL in `localStorage`.
 
-## Backend Setup
-
-### Prerequisites
-
-- Docker + Docker Compose plugin on the host
-- Java 21+
-- The server accessible on your Tailscale IP
-
-### Environment Variables
-
-| Variable             | Default       | Description                            |
-|----------------------|---------------|----------------------------------------|
-| `STACKMGR_TOKEN`     | **required**  | Bearer token for API authentication    |
-| `STACKMGR_BIND_HOST` | `127.0.0.1`   | Host/IP to bind (use your Tailscale IP)|
-| `STACKMGR_PORT`      | `8080`        | Port to listen on                      |
-
-### Run with Docker Compose (recommended)
-
-1. Copy `deploy/compose.yml` to your server.
-2. Copy `deploy/.env.example` to `deploy/.env` and set a strong `STACKMGR_TOKEN`.
-3. Edit `deploy/compose.yml` to replace `100.x.y.z` with your actual Tailscale IP.
-
-```bash
-cd deploy
-cp .env.example .env
-# edit .env and compose.yml with your Tailscale IP and token
-docker compose up -d
+File layout on the Pi:
+```
+/srv/compose/<stack-name>/compose.yml   ← desired state / config
+/srv/containers/<stack-name>/           ← runtime data / volumes (for stateful services)
 ```
 
-### Build from source
+---
+
+## Pi Setup
+
+### 1. Prerequisites
+
+- Raspberry Pi running a recent Raspberry Pi OS (or Debian-based distro)
+- [Tailscale](https://tailscale.com/download/linux) installed and connected
+- Docker + Docker Compose plugin installed
+
+Install Docker (if not already):
+```bash
+curl -fsSL https://get.docker.com | sh
+```
+
+Install Tailscale (if not already):
+```bash
+curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up
+```
+
+### 2. Add your user to the docker group
+
+This lets you run `docker` commands without `sudo`:
+```bash
+sudo usermod -aG docker $USER
+# Log out and back in (or reboot) for the group change to take effect
+sudo reboot
+```
+
+Verify after reboot:
+```bash
+docker ps   # should work without sudo
+```
+
+### 3. Create the compose directory structure
+
+```bash
+sudo mkdir -p /srv/compose
+sudo chown $USER:$USER /srv/compose
+```
+
+For services with persistent data you will also create:
+```bash
+sudo mkdir -p /srv/containers
+sudo chown $USER:$USER /srv/containers
+```
+
+### 4. Find your Tailscale IP
+
+```bash
+tailscale ip -4
+# e.g. 100.125.223.81
+```
+
+---
+
+## Running the Backend
+
+### Option A: Docker Compose (recommended)
+
+```bash
+# 1. Copy deploy files to the Pi
+cp deploy/compose.yml ~/stackmanager-compose.yml
+cp deploy/.env.example ~/stackmanager.env
+
+# 2. Edit the .env file with a strong random token
+nano ~/stackmanager.env
+#   STACKMGR_TOKEN=<replace-with-a-long-random-secret>
+
+# 3. Edit compose.yml — replace 100.x.y.z with your actual Tailscale IP
+nano ~/stackmanager-compose.yml
+
+# 4. Start
+docker compose -f ~/stackmanager-compose.yml --env-file ~/stackmanager.env up -d
+```
+
+### Option B: Build from source
+
+Requires Java 21+.
 
 ```bash
 ./gradlew :backend:installDist
-# Binary at backend/build/install/backend/bin/backend
-STACKMGR_TOKEN=mysecret STACKMGR_BIND_HOST=100.x.y.z ./backend/build/install/backend/bin/backend
+
+# Start (replace token and IP)
+STACKMGR_TOKEN=my-secret \
+STACKMGR_BIND_HOST=100.125.223.81 \
+STACKMGR_PORT=8080 \
+./backend/build/install/backend/bin/backend
 ```
+
+### Environment Variables
+
+| Variable             | Default       | Description                                    |
+|----------------------|---------------|------------------------------------------------|
+| `STACKMGR_TOKEN`     | **required**  | Bearer token for API authentication            |
+| `STACKMGR_BIND_HOST` | `127.0.0.1`   | Host/IP to bind — set to your Tailscale IP     |
+| `STACKMGR_PORT`      | `8080`        | Port to listen on                              |
+
+> **Security note:** `STACKMGR_BIND_HOST` defaults to `127.0.0.1`.  
+> For Tailscale access, set it to your Pi's Tailscale IP (`tailscale ip -4`).  
+> Never set it to `0.0.0.0` unless you have an independent firewall in place.
+
+---
+
+## Accessing via Tailscale
+
+Once the backend is running, from any device on your Tailscale network open a browser and go to your frontend. Configure it at the `/login` page with:
+
+- **Bearer Token** — must match the `STACKMGR_TOKEN` you set on the Pi
+- **Backend Base URL** — `http://<tailscale-ip>:8080` (e.g. `http://100.125.223.81:8080`)
+
+You can also use the Pi's Tailscale MagicDNS hostname:
+- `http://maleficpi.your-tailnet.ts.net:8080`
+
+Check the hostname with:
+```bash
+tailscale status | head -3
+```
+
+The API is only reachable from devices connected to your Tailscale network — it is never exposed to the public internet.
+
+---
 
 ## Frontend Setup
 
-The frontend is a Kobweb static site. Build and export with the Kobweb CLI:
+The frontend is a Kobweb static site. Build and export with the [Kobweb CLI](https://github.com/varabyte/kobweb#installation):
 
 ```bash
 cd site
 kobweb export --layout static
 ```
 
-Serve the exported `site/.kobweb/site/` directory from any static host (GitHub Pages, Nginx, Caddy, etc.).
+Serve the exported `site/.kobweb/site/` directory from any static host (Nginx on the Pi, Caddy, GitHub Pages, Cloudflare Pages, etc.).
 
-On first visit, go to `/login` to set:
-- **Bearer Token** — must match `STACKMGR_TOKEN` on the backend
-- **Backend Base URL** — your Tailscale URL, e.g. `http://100.x.y.z:8080`
+**Quick local test with Kobweb dev server:**
+```bash
+cd site
+kobweb run    # opens http://localhost:8080
+```
 
-## API Endpoints
+---
 
-All endpoints require `Authorization: Bearer <token>` header.
+## API Reference
 
-| Method | Path                          | Description                  |
-|--------|-------------------------------|------------------------------|
-| GET    | `/api/health`                 | Health check                 |
-| GET    | `/api/stacks`                 | List all stacks               |
-| GET    | `/api/stacks/{name}`          | Get stack compose YAML        |
-| PUT    | `/api/stacks/{name}`          | Create/update stack           |
-| POST   | `/api/stacks/{name}/deploy`   | `docker compose up -d`        |
-| POST   | `/api/stacks/{name}/stop`     | `docker compose down`         |
-| POST   | `/api/stacks/{name}/pull`     | `docker compose pull`         |
-| GET    | `/api/stacks/{name}/logs`     | Get logs (`?tail=N`)          |
+All endpoints except `/api/health` require `Authorization: Bearer <token>` header.
+
+| Method | Path                          | Description                           |
+|--------|-------------------------------|---------------------------------------|
+| GET    | `/api/health`                 | Health check (no auth)                |
+| GET    | `/api/stacks`                 | List all stacks                       |
+| GET    | `/api/stacks/{name}`          | Get stack compose YAML                |
+| PUT    | `/api/stacks/{name}`          | Create/update stack (JSON body)       |
+| POST   | `/api/stacks/{name}/deploy`   | `docker compose up -d`                |
+| POST   | `/api/stacks/{name}/stop`     | `docker compose down`                 |
+| POST   | `/api/stacks/{name}/pull`     | `docker compose pull`                 |
+| GET    | `/api/stacks/{name}/logs`     | Get recent logs (`?tail=N`, default 100) |
 
 Stack names must match `^[a-z0-9-]+$`. Compose files are stored at `/srv/compose/<name>/compose.yml`.
+
+**PUT body:**
+```json
+{ "composeYaml": "services:\n  ..." }
+```
+
+---
 
 ## Development
 
 ```bash
-# Backend
+# Backend only
 ./gradlew :backend:build
 
 # Frontend (requires kobweb CLI)

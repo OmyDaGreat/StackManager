@@ -28,8 +28,16 @@ fun runDockerCompose(stackName: String, vararg args: String): CommandResult {
         .directory(dir)
         .redirectErrorStream(false)
         .start()
-    val stdout = process.inputStream.bufferedReader().readText()
-    val stderr = process.errorStream.bufferedReader().readText()
+    // Capture stdout and stderr on dedicated threads to prevent pipe-buffer
+    // deadlocks when either stream produces enough output to fill the OS pipe buffer.
+    var stdout = ""
+    var stderr = ""
+    val stdoutThread = Thread { stdout = process.inputStream.bufferedReader().readText() }
+    val stderrThread = Thread { stderr = process.errorStream.bufferedReader().readText() }
+    stdoutThread.start()
+    stderrThread.start()
     val exitCode = process.waitFor()
+    stdoutThread.join()
+    stderrThread.join()
     return CommandResult(exitCode, stdout, stderr)
 }
