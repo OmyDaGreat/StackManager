@@ -17,7 +17,16 @@ import org.http4k.server.Http4kUndertowHttpHandler
 import org.http4k.server.ServerConfig
 import org.http4k.server.asServer
 
-/** Custom ServerConfig that binds Undertow to a specific host (not just 0.0.0.0). */
+/**
+ * Custom [ServerConfig] that binds Undertow to a specific [host] and [port].
+ *
+ * The standard http4k [org.http4k.server.Undertow] always binds to `0.0.0.0`.
+ * This variant restricts the listener to [host] so the API is only reachable on
+ * the configured interface (e.g. a Tailscale IP), never on the public NIC.
+ *
+ * @param port TCP port to listen on.
+ * @param host Network interface address to bind (e.g. `127.0.0.1` or a Tailscale IP).
+ */
 class BoundUndertow(private val port: Int, private val host: String) : ServerConfig {
     override fun toServer(http: HttpHandler): Http4kServer = object : Http4kServer {
         private val server =
