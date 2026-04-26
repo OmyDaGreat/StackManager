@@ -4,9 +4,6 @@ plugins {
     application
 }
 
-group = "xyz.malefic.stackmanager"
-version = "1.0-SNAPSHOT"
-
 application {
     mainClass.set("xyz.malefic.stackmanager.MainKt")
 }

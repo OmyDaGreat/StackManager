@@ -180,6 +180,7 @@ Publishing behavior:
 - Manual run via `workflow_dispatch`: choose a bump type (`patch`, `minor`, or `major`)
 - The workflow reads the latest `vX.Y.Z` git tag, computes the next semantic version, builds and pushes the image, then pushes the new git tag
 - After the tag push, the workflow creates a matching GitHub Release with generated release notes
+- Gradle project versioning follows this same semantic version source (`vX.Y.Z` tags); by default it resolves to the latest tag (without `v`), with `STACKMANAGER_VERSION` / `-PstackmanagerVersion` overrides when needed
 - Published image tags include only the release tag:
   - `vX.Y.Z`
 

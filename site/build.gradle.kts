@@ -7,9 +7,6 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
-group = "xyz.malefic.stackmanager"
-version = "1.0-SNAPSHOT"
-
 kobweb {
     app {
         index {
