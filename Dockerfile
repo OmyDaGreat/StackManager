@@ -1,4 +1,4 @@
-FROM gradle:8.12-jdk21 AS builder
+FROM gradle:9.4.1 AS builder
 WORKDIR /app
 COPY gradle/ gradle/
 COPY gradlew gradlew.bat settings.gradle.kts build.gradle.kts ./
