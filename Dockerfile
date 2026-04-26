@@ -3,6 +3,7 @@ WORKDIR /app
 COPY gradle/ gradle/
 COPY gradlew gradlew.bat settings.gradle.kts build.gradle.kts ./
 COPY backend/ backend/
+COPY site/ site/
 RUN chmod +x gradlew && ./gradlew :backend:installDist --no-daemon
 
 FROM eclipse-temurin:21-jre-jammy
