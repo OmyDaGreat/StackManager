@@ -1,6 +1,9 @@
 name: Build and publish Docker image
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
@@ -25,7 +28,7 @@ concurrency:
 
 jobs:
   validate:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
