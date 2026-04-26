@@ -6,7 +6,7 @@ COPY backend/ backend/
 COPY site/ site/
 RUN chmod +x gradlew && ./gradlew :backend:installDist --no-daemon
 
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:26-jre-jammy
 WORKDIR /app
 COPY --from=builder /app/backend/build/install/backend/ .
 EXPOSE 8080
