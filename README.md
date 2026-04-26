@@ -75,20 +75,28 @@ tailscale ip -4
 ### Option A: Docker Compose (recommended)
 
 ```bash
-# 1. Copy deploy files to the Pi
-cp deploy/compose.yml ~/stackmanager-compose.yml
-cp deploy/.env.example ~/stackmanager.env
+# 1. Create config directory for StackManager itself
+sudo mkdir -p /etc/stackmanager
 
-# 2. Edit the .env file with a strong random token
-nano ~/stackmanager.env
+# 2. Copy deploy files
+sudo cp deploy/compose.yml /etc/stackmanager/compose.yml
+sudo cp deploy/.env.example /etc/stackmanager/stackmanager.env
+
+# 3. Edit the env file with a strong random token
+sudo nano /etc/stackmanager/stackmanager.env
 #   STACKMGR_TOKEN=<replace-with-a-long-random-secret>
+#   STACKMGR_BIND_HOST=<your-tailscale-ip>
+#   STACKMGR_IMAGE=omydagreat/stackmanager:vX.Y.Z
 
-# 3. Edit compose.yml — replace 100.x.y.z with your actual Tailscale IP
-nano ~/stackmanager-compose.yml
+# 4. Lock down env file permissions (contains secrets)
+sudo chown root:root /etc/stackmanager/stackmanager.env
+sudo chmod 600 /etc/stackmanager/stackmanager.env
 
-# 4. Start
-docker compose -f ~/stackmanager-compose.yml --env-file ~/stackmanager.env up -d
+# 5. Start
+docker compose -f /etc/stackmanager/compose.yml --env-file /etc/stackmanager/stackmanager.env up -d
 ```
+
+> Keep StackManager's own deployment files in `/etc/stackmanager` so they stay separate from managed stack definitions under `/srv/compose/<stack-name>/compose.yml`.
 
 ### Option B: Build from source
 
@@ -111,6 +119,7 @@ STACKMGR_PORT=8080 \
 | `STACKMGR_TOKEN`     | **required**  | Bearer token for API authentication            |
 | `STACKMGR_BIND_HOST` | `127.0.0.1`   | Host/IP to bind — set to your Tailscale IP     |
 | `STACKMGR_PORT`      | `8080`        | Port to listen on                              |
+| `STACKMGR_IMAGE`     | **required**  | Docker image tag to run (pin to a `vX.Y.Z` release) |
 
 > **Security note:** `STACKMGR_BIND_HOST` defaults to `127.0.0.1`.  
 > For Tailscale access, set it to your Pi's Tailscale IP (`tailscale ip -4`).  
@@ -153,6 +162,34 @@ Serve the exported `site/.kobweb/site/` directory from any static host (Nginx on
 cd site
 kobweb run    # opens http://localhost:8080
 ```
+
+---
+
+## Docker Hub Deployment (GitHub Actions)
+
+This repo includes a workflow at `.github/workflows/docker-publish.yml` that builds the backend image from `Dockerfile` and publishes it to Docker Hub.
+
+Required GitHub repository secrets:
+
+- `DOCKERHUB_USERNAME` — your Docker Hub username (or org bot username)
+- `DOCKERHUB_TOKEN` — Docker Hub access token with permission to push images
+
+Publishing behavior:
+
+- Pull requests to `main`: build only (no push)
+- Manual run via `workflow_dispatch`: choose a bump type (`patch`, `minor`, or `major`)
+- The workflow reads the latest `vX.Y.Z` git tag, computes the next semantic version, builds and pushes the image, then pushes the new git tag
+- After the tag push, the workflow creates a matching GitHub Release with generated release notes
+- Published image tags include only the release tag:
+  - `vX.Y.Z`
+
+To release a new image, open the GitHub Actions workflow and dispatch it with the desired bump type. For example, if the latest git tag is `v1.4.2`:
+
+- `patch` → `v1.4.3`
+- `minor` → `v1.5.0`
+- `major` → `v2.0.0`
+
+For deployments, set `STACKMGR_IMAGE` to the exact release you want to run, for example `omydagreat/stackmanager:v1.4.3`.
 
 ---
 
