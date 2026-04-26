@@ -37,33 +37,25 @@ fun getToken(): String = localStorage.getItem("stackmgr_token") ?: ""
 
 fun setToken(token: String) = localStorage.setItem("stackmgr_token", token)
 
-fun getBaseUrl(): String = localStorage.getItem("stackmgr_base_url") ?: ""
+private fun normalizedBaseUrl(value: String?): String = value?.trim()?.trimEnd('/').orEmpty()
 
-fun setBaseUrl(url: String) = localStorage.setItem("stackmgr_base_url", url)
+fun getBaseUrl(): String {
+    val stored = normalizedBaseUrl(localStorage.getItem("stackmgr_base_url"))
+    return if (stored.isNotEmpty()) stored else window.location.origin.trimEnd('/')
+}
 
-private fun normalizedBaseUrl(value: String): String = value.trim().trimEnd('/')
-
-private fun requireBaseUrl(): String {
-    val existing = normalizedBaseUrl(getBaseUrl())
-    if (existing.isNotEmpty()) return existing
-
-    val entered =
-        normalizedBaseUrl(
-            window.prompt(
-                "Enter your backend server URL (e.g. http://100.x.y.z:8080)",
-                "",
-            ) ?: "",
-        )
-    if (entered.isEmpty()) {
-        throw IllegalStateException("Backend server URL is required before continuing. Open Settings to configure it.")
+fun setBaseUrl(url: String) {
+    val normalized = normalizedBaseUrl(url)
+    if (normalized.isEmpty()) {
+        localStorage.removeItem("stackmgr_base_url")
+    } else {
+        localStorage.setItem("stackmgr_base_url", normalized)
     }
-    setBaseUrl(entered)
-    return entered
 }
 
 fun apiUrl(path: String): String {
-    val base = requireBaseUrl()
-    return "$base$path"
+    val base = getBaseUrl()
+    return if (path.startsWith("/")) "$base$path" else "$base/$path"
 }
 
 fun authHeaders(): Headers {

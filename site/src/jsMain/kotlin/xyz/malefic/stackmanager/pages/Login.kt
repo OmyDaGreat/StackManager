@@ -42,7 +42,7 @@ fun LoginPage() {
         ) {
             H2 { Text("Stack Manager — Settings") }
 
-            P { Text("Set the backend bearer token and (optionally) the backend base URL for Tailscale access.") }
+            P { Text("Set the backend bearer token. Base URL is optional and defaults to this same server.") }
 
             Label { Text("Bearer Token") }
             Input(
@@ -60,7 +60,7 @@ fun LoginPage() {
                 },
             )
 
-            Label { Text("Backend Base URL (optional, e.g. http://100.x.y.z:8080)") }
+            Label { Text("Backend Base URL override (optional, e.g. http://100.x.y.z:8080)") }
             Input(
                 type = InputType.Text,
                 attrs = {

@@ -1,16 +1,16 @@
 # Stack Manager
 
-A Tailscale-only Docker Compose stack manager: a Kotlin/http4k backend API + Kobweb frontend, designed to run on a Raspberry Pi (or any server) and be accessed securely over your Tailscale network.
+A Tailscale-only Docker Compose stack manager: a Kotlin/http4k backend API + Kobweb frontend bundled into one server/container image, designed to run on a Raspberry Pi (or any server) and be accessed securely over your Tailscale network.
 
 ## Architecture
 
-- **backend/** — Kotlin/JVM HTTP API (http4k + Undertow). Manages Docker Compose stacks under `/srv/compose/<stack-name>/compose.yml`.
-- **site/** — Kobweb (Kotlin/JS + Compose HTML) frontend SPA. Stores the bearer token and backend URL in `localStorage`.
+- **backend/** — Kotlin/JVM HTTP API (http4k + Undertow) that also serves the frontend SPA. Manages Docker Compose stacks under `/srv/compose/<stack-name>/compose.yml`.
+- **site/** — Kobweb (Kotlin/JS + Compose HTML) frontend SPA, bundled into the Docker image and served by the backend at `/`.
 
 File layout on the Pi:
 ```
 /srv/compose/<stack-name>/compose.yml   ← desired state / config
-/srv/containers/<stack-name>/           ← runtime data / volumes (for stateful services)
+/srv/containers/<container-name>/           ← runtime data / volumes (for stateful services)
 ```
 
 ---
@@ -70,7 +70,7 @@ tailscale ip -4
 
 ---
 
-## Running the Backend
+## Running Stack Manager
 
 ### Option A: Docker Compose (recommended)
 
@@ -103,12 +103,19 @@ docker compose -f /etc/stackmanager/compose.yml --env-file /etc/stackmanager/sta
 Requires Java 21+.
 
 ```bash
-./gradlew :backend:installDist
+./gradlew build
+
+# Prepare frontend assets for the backend server
+mkdir -p backend/build/web
+cp site/build/dist/js/productionExecutable/stackmanager.js backend/build/web/
+cp site/build/dist/js/productionExecutable/stackmanager.js.map backend/build/web/
+cp -r site/build/dist/js/productionExecutable/public/. backend/build/web/
 
 # Start (replace token and IP)
 STACKMGR_TOKEN=my-secret \
 STACKMGR_BIND_HOST=100.125.223.81 \
 STACKMGR_PORT=8080 \
+STACKMGR_WEB_ROOT=$(pwd)/backend/build/web \
 ./backend/build/install/backend/bin/backend
 ```
 
@@ -119,6 +126,7 @@ STACKMGR_PORT=8080 \
 | `STACKMGR_TOKEN`     | **required**  | Bearer token for API authentication            |
 | `STACKMGR_BIND_HOST` | `127.0.0.1`   | Host/IP to bind — set to your Tailscale IP     |
 | `STACKMGR_PORT`      | `8080`        | Port to listen on                              |
+| `STACKMGR_WEB_ROOT`  | `/app/public` | Directory containing bundled frontend assets   |
 | `STACKMGR_IMAGE`     | **required**  | Docker image tag to run (pin to a `vX.Y.Z` release) |
 
 > **Security note:** `STACKMGR_BIND_HOST` defaults to `127.0.0.1`.  
@@ -129,10 +137,15 @@ STACKMGR_PORT=8080 \
 
 ## Accessing via Tailscale
 
-Once the backend is running, from any device on your Tailscale network open a browser and go to your frontend. Configure it at the `/login` page with:
+Once Stack Manager is running, from any device on your Tailscale network open:
+
+- `http://<tailscale-ip>:8080`
+- or `http://<magicdns-hostname>:8080`
+
+The frontend and API are served from the same address. In `/login`, configure:
 
 - **Bearer Token** — must match the `STACKMGR_TOKEN` you set on the Pi
-- **Backend Base URL** — `http://<tailscale-ip>:8080` (e.g. `http://100.125.223.81:8080`)
+- **Backend Base URL** — optional override. By default, the app uses the current site origin automatically.
 
 You can also use the Pi's Tailscale MagicDNS hostname:
 - `http://maleficpi.your-tailnet.ts.net:8080`
@@ -148,14 +161,7 @@ The API is only reachable from devices connected to your Tailscale network — i
 
 ## Frontend Setup
 
-The frontend is a Kobweb static site. Build and export with the [Kobweb CLI](https://github.com/varabyte/kobweb#installation):
-
-```bash
-cd site
-kobweb export --layout static
-```
-
-Serve the exported `site/.kobweb/site/` directory from any static host (Nginx on the Pi, Caddy, GitHub Pages, Cloudflare Pages, etc.).
+For production, the frontend is bundled into the same Docker image and served by the backend process. You do not need GitHub Pages or a separate static host.
 
 **Quick local test with Kobweb dev server:**
 ```bash
