@@ -121,12 +121,12 @@ STACKMGR_WEB_ROOT=$(pwd)/backend/build/web \
 
 ### Environment Variables
 
-| Variable             | Default       | Description                                    |
-|----------------------|---------------|------------------------------------------------|
-| `STACKMGR_TOKEN`     | **required**  | Bearer token for API authentication            |
-| `STACKMGR_BIND_HOST` | `127.0.0.1`   | Host/IP to bind — set to your Tailscale IP     |
-| `STACKMGR_PORT`      | `8080`        | Port to listen on                              |
-| `STACKMGR_WEB_ROOT`  | `/app/public` | Directory containing bundled frontend assets   |
+| Variable             | Default       | Description                                         |
+|----------------------|---------------|-----------------------------------------------------|
+| `STACKMGR_TOKEN`     | **required**  | Bearer token for API authentication                 |
+| `STACKMGR_BIND_HOST` | `127.0.0.1`   | Host/IP to bind — set to your Tailscale IP          |
+| `STACKMGR_PORT`      | `8080`        | Port to listen on                                   |
+| `STACKMGR_WEB_ROOT`  | `/app/public` | Directory containing bundled frontend assets        |
 | `STACKMGR_IMAGE`     | **required**  | Docker image tag to run (pin to a `vX.Y.Z` release) |
 
 > **Security note:** `STACKMGR_BIND_HOST` defaults to `127.0.0.1`.  
@@ -204,16 +204,16 @@ For deployments, set `STACKMGR_IMAGE` to the exact release you want to run, for 
 
 All endpoints except `/api/health` require `Authorization: Bearer <token>` header.
 
-| Method | Path                          | Description                           |
-|--------|-------------------------------|---------------------------------------|
-| GET    | `/api/health`                 | Health check (no auth)                |
-| GET    | `/api/stacks`                 | List all stacks                       |
-| GET    | `/api/stacks/{name}`          | Get stack compose YAML                |
-| PUT    | `/api/stacks/{name}`          | Create/update stack (JSON body)       |
-| POST   | `/api/stacks/{name}/deploy`   | `docker compose up -d`                |
-| POST   | `/api/stacks/{name}/stop`     | `docker compose down`                 |
-| POST   | `/api/stacks/{name}/pull`     | `docker compose pull`                 |
-| GET    | `/api/stacks/{name}/logs`     | Get recent logs (`?tail=N`, default 100) |
+| Method | Path                        | Description                              |
+|--------|-----------------------------|------------------------------------------|
+| GET    | `/api/health`               | Health check (no auth)                   |
+| GET    | `/api/stacks`               | List all stacks                          |
+| GET    | `/api/stacks/{name}`        | Get stack compose YAML                   |
+| PUT    | `/api/stacks/{name}`        | Create/update stack (JSON body)          |
+| POST   | `/api/stacks/{name}/deploy` | `docker compose up -d`                   |
+| POST   | `/api/stacks/{name}/stop`   | `docker compose down`                    |
+| POST   | `/api/stacks/{name}/pull`   | `docker compose pull`                    |
+| GET    | `/api/stacks/{name}/logs`   | Get recent logs (`?tail=N`, default 100) |
 
 Stack names must match `^[a-z0-9-]+$`. Compose files are stored at `/srv/compose/<name>/compose.yml`.
 
