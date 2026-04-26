@@ -18,7 +18,6 @@ import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
-import kotlinx.coroutines.await
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.H2
@@ -41,7 +40,7 @@ fun StacksPage() {
         loading = true
         error = ""
         try {
-            val resp = fetchJson("/api/stacks").await()
+            val resp = fetchJson("/api/stacks")
             val result = json.decodeFromString<StackListResponse>(resp)
             stacks = result.stacks
         } catch (e: Exception) {
@@ -72,9 +71,18 @@ fun StacksPage() {
             }
 
             when {
-                loading -> P { Text("Loading...") }
-                error.isNotEmpty() -> P { Text("❌ $error") }
-                stacks.isEmpty() -> P { Text("No stacks found. Create your first stack!") }
+                loading -> {
+                    P { Text("Loading...") }
+                }
+
+                error.isNotEmpty() -> {
+                    P { Text("❌ $error") }
+                }
+
+                stacks.isEmpty() -> {
+                    P { Text("No stacks found. Create your first stack!") }
+                }
+
                 else -> {
                     stacks.forEach { name ->
                         Box(

@@ -13,21 +13,30 @@ fun composeFile(name: String): File = File("${Config.COMPOSE_ROOT}/$name/compose
 fun listStacks(): List<String> {
     val root = File(Config.COMPOSE_ROOT)
     if (!root.exists()) return emptyList()
-    return root.listFiles { f -> f.isDirectory && File(f, "compose.yml").exists() }
+    return root
+        .listFiles { f -> f.isDirectory && File(f, "compose.yml").exists() }
         ?.map { it.name }
         ?.sorted()
         ?: emptyList()
 }
 
-data class CommandResult(val exitCode: Int, val stdout: String, val stderr: String)
+data class CommandResult(
+    val exitCode: Int,
+    val stdout: String,
+    val stderr: String,
+)
 
-fun runDockerCompose(stackName: String, vararg args: String): CommandResult {
+fun runDockerCompose(
+    stackName: String,
+    vararg args: String,
+): CommandResult {
     val dir = stackDir(stackName)
     val cmd = listOf("docker", "compose") + args.toList()
-    val process = ProcessBuilder(cmd)
-        .directory(dir)
-        .redirectErrorStream(false)
-        .start()
+    val process =
+        ProcessBuilder(cmd)
+            .directory(dir)
+            .redirectErrorStream(false)
+            .start()
     // Capture stdout and stderr on dedicated threads to prevent pipe-buffer
     // deadlocks when either stream produces enough output to fill the OS pipe buffer.
     var stdout = ""

@@ -6,21 +6,26 @@ import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.UNAUTHORIZED
 
-val bearerAuthFilter = Filter { next: HttpHandler ->
-    { req: Request ->
-        val auth = req.header("Authorization") ?: ""
-        val expected = "Bearer ${Config.token}"
-        if (constantTimeEquals(auth, expected)) {
-            next(req)
-        } else {
-            Response(UNAUTHORIZED).body("""{"error":"Unauthorized"}""")
-                .header("Content-Type", "application/json")
+val bearerAuthFilter =
+    Filter { next: HttpHandler ->
+        { req: Request ->
+            val auth = req.header("Authorization") ?: ""
+            val expected = "Bearer ${Config.token}"
+            if (constantTimeEquals(auth, expected)) {
+                next(req)
+            } else {
+                Response(UNAUTHORIZED)
+                    .body("""{"error":"Unauthorized"}""")
+                    .header("Content-Type", "application/json")
+            }
         }
     }
-}
 
 /** Constant-time string comparison to prevent timing attacks. */
-private fun constantTimeEquals(a: String, b: String): Boolean {
+private fun constantTimeEquals(
+    a: String,
+    b: String,
+): Boolean {
     val aBytes = a.toByteArray()
     val bBytes = b.toByteArray()
     val maxLen = maxOf(aBytes.size, bBytes.size)

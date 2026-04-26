@@ -19,9 +19,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.await
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
 import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Button
@@ -55,7 +53,7 @@ fun StackPage() {
         if (!isNew) {
             loading = true
             try {
-                val resp = fetchJson("/api/stacks/$name").await()
+                val resp = fetchJson("/api/stacks/$name")
                 val info = json.decodeFromString<StackInfo>(resp)
                 composeYaml = info.composeYaml
             } catch (e: Exception) {
@@ -65,9 +63,13 @@ fun StackPage() {
         }
     }
 
-    suspend fun executeStackCommand(path: String, method: String = "POST", body: String? = null): String =
+    suspend fun executeStackCommand(
+        path: String,
+        method: String = "POST",
+        body: String? = null,
+    ): String =
         try {
-            val resp = fetchJson(path, method, body).await()
+            val resp = fetchJson(path, method, body)
             val result = json.decodeFromString<CommandResponse>(resp)
             "Exit ${result.exitCode}\n${result.stdout}${if (result.stderr.isNotBlank()) "\nSTDERR:\n${result.stderr}" else ""}"
         } catch (e: Exception) {
@@ -126,20 +128,29 @@ fun StackPage() {
                 Button(attrs = {
                     onClick {
                         MainScope().launch {
-                            if (effectiveName.isBlank()) { status = "Stack name is required"; return@launch }
+                            if (effectiveName.isBlank()) {
+                                status = "Stack name is required"
+                                return@launch
+                            }
                             if (!effectiveName.matches(Regex("^[a-z0-9-]+$"))) {
                                 status = "Invalid stack name (use only lowercase letters, digits, hyphens)"
                                 return@launch
                             }
                             val body = json.encodeToString(PutStackRequest(composeYaml))
-                            status = try {
-                                fetchJson("/api/stacks/$effectiveName", "PUT", body).await()
-                                "✅ Saved!"
-                            } catch (e: Exception) { "Error: ${e.message}" }
+                            status =
+                                try {
+                                    fetchJson("/api/stacks/$effectiveName", "PUT", body)
+                                    "✅ Saved!"
+                                } catch (e: Exception) {
+                                    "Error: ${e.message}"
+                                }
                             if (isNew) ctx.router.navigateTo("/stack/$effectiveName")
                         }
                     }
-                    style { property("padding", "8px 16px"); property("margin-right", "8px") }
+                    style {
+                        property("padding", "8px 16px")
+                        property("margin-right", "8px")
+                    }
                 }) { Text("Save") }
 
                 if (!isNew) {
@@ -150,7 +161,10 @@ fun StackPage() {
                                 status = executeStackCommand("/api/stacks/$name/deploy")
                             }
                         }
-                        style { property("padding", "8px 16px"); property("margin-right", "8px") }
+                        style {
+                            property("padding", "8px 16px")
+                            property("margin-right", "8px")
+                        }
                     }) { Text("Deploy") }
 
                     Button(attrs = {
@@ -160,7 +174,10 @@ fun StackPage() {
                                 status = executeStackCommand("/api/stacks/$name/stop")
                             }
                         }
-                        style { property("padding", "8px 16px"); property("margin-right", "8px") }
+                        style {
+                            property("padding", "8px 16px")
+                            property("margin-right", "8px")
+                        }
                     }) { Text("Stop") }
 
                     Button(attrs = {
@@ -170,17 +187,23 @@ fun StackPage() {
                                 status = executeStackCommand("/api/stacks/$name/pull")
                             }
                         }
-                        style { property("padding", "8px 16px"); property("margin-right", "8px") }
+                        style {
+                            property("padding", "8px 16px")
+                            property("margin-right", "8px")
+                        }
                     }) { Text("Pull") }
 
                     Button(attrs = {
                         onClick {
                             MainScope().launch {
                                 logs = "Loading logs..."
-                                logs = try {
-                                    val result = json.decodeFromString<CommandResponse>(fetchJson("/api/stacks/$name/logs").await())
-                                    result.stdout + (if (result.stderr.isNotBlank()) "\nSTDERR:\n${result.stderr}" else "")
-                                } catch (e: Exception) { "Error: ${e.message}" }
+                                logs =
+                                    try {
+                                        val result = json.decodeFromString<CommandResponse>(fetchJson("/api/stacks/$name/logs"))
+                                        result.stdout + (if (result.stderr.isNotBlank()) "\nSTDERR:\n${result.stderr}" else "")
+                                    } catch (e: Exception) {
+                                        "Error: ${e.message}"
+                                    }
                             }
                         }
                         style { property("padding", "8px 16px") }
