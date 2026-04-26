@@ -1,6 +1,6 @@
 services:
   stackmanager:
-    image: ghcr.io/omydagreat/stackmanager:latest
+    image: ${STACKMGR_IMAGE}
     container_name: stackmanager
     restart: unless-stopped
     volumes:
@@ -8,9 +8,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - STACKMGR_TOKEN=${STACKMGR_TOKEN}
-      # Replace with your Pi's Tailscale IP (run: tailscale ip -4)
-      - STACKMGR_BIND_HOST=100.x.y.z
+      # Set STACKMGR_BIND_HOST in your .env file to your Pi's Tailscale IP
+      - STACKMGR_BIND_HOST=${STACKMGR_BIND_HOST:-127.0.0.1}
       - STACKMGR_PORT=8080
     ports:
       # Only bind on your Tailscale IP so the port is never exposed publicly
-      - "100.x.y.z:8080:8080"
+      - "${STACKMGR_BIND_HOST:-127.0.0.1}:8080:8080"
