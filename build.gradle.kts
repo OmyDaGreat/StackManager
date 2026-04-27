@@ -7,6 +7,7 @@ plugins {
 val semverTagRegex = Regex("""^v\d+\.\d+\.\d+$""")
 val versionFromGitTag = providers.exec {
     commandLine("git", "tag", "-l", "v[0-9]*.[0-9]*.[0-9]*", "--sort=-v:refname")
+    isIgnoreExitValue = true
 }.standardOutput.asText.map { tags ->
     tags.lineSequence()
         .map(String::trim)
