@@ -108,7 +108,8 @@ Requires Java 21+.
 # Prepare frontend assets for the backend server
 mkdir -p backend/build/web
 cp site/build/dist/js/productionExecutable/stackmanager.js backend/build/web/
-cp site/build/dist/js/productionExecutable/stackmanager.js.map backend/build/web/
+# Optional: copy the source map if Kobweb generated one
+cp site/build/dist/js/productionExecutable/stackmanager.js.map backend/build/web/ 2>/dev/null || true
 cp -r site/build/dist/js/productionExecutable/public/. backend/build/web/
 
 # Start (replace token and IP)
@@ -173,7 +174,7 @@ kobweb run    # opens http://localhost:8080
 
 ## Docker Hub Deployment (GitHub Actions)
 
-This repo includes a workflow at `.github/workflows/docker-publish.yml` that builds the backend image from `Dockerfile` and publishes it to Docker Hub.
+This repo includes a workflow at `.github/workflows/docker-publish.yml` that first builds the Gradle artifacts and then packages them into the backend image defined by `Dockerfile` before publishing to Docker Hub.
 
 Required GitHub repository secrets:
 
@@ -184,9 +185,8 @@ Publishing behavior:
 
 - Pull requests to `main`: build only (no push)
 - Manual run via `workflow_dispatch`: choose a bump type (`patch`, `minor`, or `major`)
-- The workflow reads the latest `vX.Y.Z` git tag, computes the next semantic version, builds and pushes the image, then pushes the new git tag
+- The workflow reads the latest `vX.Y.Z` git tag, computes the next semantic version, builds the Gradle artifacts, packages and pushes the image, then pushes the new git tag
 - After the tag push, the workflow creates a matching GitHub Release with generated release notes
-- Gradle project versioning follows this same semantic version source (`vX.Y.Z` tags); by default it resolves to the latest tag (without `v`), with `STACKMANAGER_VERSION` / `-PstackmanagerVersion` overrides when needed
 - Published image tags include only the release tag:
   - `vX.Y.Z`
 
