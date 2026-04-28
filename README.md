@@ -107,10 +107,10 @@ Requires Java 21+.
 
 # Prepare frontend assets for the backend server
 mkdir -p backend/build/web
-cp site/build/dist/js/productionExecutable/stackmanager.js backend/build/web/
+cp site/build/kotlin-webpack/js/productionExecutable/stackmanager.js backend/build/web/
 # Optional: copy the source map if Kobweb generated one
-cp site/build/dist/js/productionExecutable/stackmanager.js.map backend/build/web/ 2>/dev/null || true
-cp -r site/build/dist/js/productionExecutable/public/. backend/build/web/
+cp site/build/kotlin-webpack/js/productionExecutable/stackmanager.js.map backend/build/web/ 2>/dev/null || true
+cp -r site/build/processedResources/js/main/public/. backend/build/web/
 
 # Start (replace token and IP)
 STACKMGR_TOKEN=my-secret \
