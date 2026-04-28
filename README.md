@@ -75,6 +75,10 @@ tailscale ip -4
 ### Option A: Docker Compose (recommended)
 
 ```bash
+# 0. Download the Stack Manager repository
+cd ~ && git clone https://github.com/omydagreat/stackmanager.git
+cd stackmanager
+
 # 1. Create config directory for StackManager itself
 sudo mkdir -p /etc/stackmanager
 
@@ -95,6 +99,8 @@ sudo chmod 600 /etc/stackmanager/stackmanager.env
 # 5. Start
 docker compose -f /etc/stackmanager/compose.yml --env-file /etc/stackmanager/stackmanager.env up -d
 ```
+
+> **Optional:** After copying the deployment files to `/etc/stackmanager/`, you can delete the cloned repository (`rm -rf ~/stackmanager`) since all runtime files are now in place and the application itself runs from the Docker image, not the repo. Also, instead of copying the `compose.yml` and `.env.example` files, you could create them directly in `/etc/stackmanager/` if you prefer. The key point is to keep Stack Manager's own deployment files separate from the managed stack definitions under `/srv/compose/<stack-name>/compose.yml`.
 
 > Keep StackManager's own deployment files in `/etc/stackmanager` so they stay separate from managed stack definitions under `/srv/compose/<stack-name>/compose.yml`.
 
