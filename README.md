@@ -15,11 +15,11 @@ File layout on the Pi:
 
 ---
 
-## Pi Setup
+## Setup
 
 ### 1. Prerequisites
 
-- Raspberry Pi running a recent Raspberry Pi OS (or Debian-based distro)
+- Server running linux/arm64
 - [Tailscale](https://tailscale.com/download/linux) installed and connected
 - Docker + Docker Compose plugin installed
 
