@@ -31,6 +31,12 @@ data class StackListResponse(
     val stacks: List<String>,
 )
 
+@Serializable
+data class ErrorResponse(
+    val error: String,
+    val code: String? = null,
+)
+
 val json = Json { ignoreUnknownKeys = true }
 
 fun getToken(): String = localStorage.getItem("stackmgr_token") ?: ""
@@ -70,6 +76,13 @@ suspend fun fetchJson(
     method: String = "GET",
     body: String? = null,
 ): String {
+    // Check if token is missing and redirect to login for API calls (not during login page itself)
+    if (getToken().isEmpty() && !url.contains("/api/health") && !url.contains("/api/kobweb-status")) {
+        window.location.href = "/login"
+        // Return early to prevent further execution
+        return ""
+    }
+
     val init =
         RequestInit(
             method = method,
@@ -79,6 +92,25 @@ suspend fun fetchJson(
     val response = window.fetch(apiUrl(url), init).await()
     val responseBody = response.text().await()
     val contentType = response.headers.get("Content-Type")?.lowercase() ?: ""
+
+    // Check for 401 or UNAUTHORIZED error code and redirect to login
+    if (response.status.toInt() == 401) {
+        window.location.href = "/login"
+        return ""
+    }
+
+    // Try to parse error response to check for UNAUTHORIZED code
+    if (!response.ok && contentType.contains("application/json")) {
+        try {
+            val errorResp = json.decodeFromString<ErrorResponse>(responseBody)
+            if (errorResp.code == "UNAUTHORIZED") {
+                window.location.href = "/login"
+                return ""
+            }
+        } catch (e: Exception) {
+            // Not a valid error response, continue with normal error handling
+        }
+    }
 
     if (!response.ok) {
         throw IllegalStateException("API request failed (${response.status} ${response.statusText}): $responseBody")

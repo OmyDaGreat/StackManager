@@ -61,6 +61,9 @@ fun main() {
             "/api/health" bind GET to { _: Request ->
                 Response(OK).body("""{"status":"ok"}""").header("Content-Type", "application/json")
             },
+            "/api/kobweb-status" bind GET to { _: Request ->
+                Response(OK).body("""{"status":"ok"}""").header("Content-Type", "application/json")
+            },
         )
 
     val protectedRoutes =
@@ -122,7 +125,7 @@ private fun serveFrontend(
     if (req.method != GET && req.method != HEAD) return Response(NOT_FOUND)
 
     val path = req.uri.path.removePrefix("/")
-    val requested = if (path.isBlank()) "index.html" else path
+    val requested = path.ifBlank { "index.html" }
 
     val directFile = resolveStaticFile(webRoot, requested)
     if (directFile != null) return fileResponse(req, directFile)

@@ -15,7 +15,7 @@ val bearerAuthFilter =
                 next(req)
             } else {
                 Response(UNAUTHORIZED)
-                    .body("""{"error":"Unauthorized"}""")
+                    .body("""{"error":"Unauthorized","code":"UNAUTHORIZED"}""")
                     .header("Content-Type", "application/json")
             }
         }

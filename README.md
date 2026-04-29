@@ -129,14 +129,14 @@ STACKMGR_WEB_ROOT=$(pwd)/backend/build/web \
 
 ### Environment Variables
 
-| Variable             | Default       | Description                                         |
-|----------------------|---------------|-----------------------------------------------------|
-| `STACKMGR_TOKEN`     | **required**  | Bearer token for API authentication                 |
-| `STACKMGR_BIND_HOST` | `127.0.0.1`   | App listen address; Docker uses `0.0.0.0` inside the container |
-| `STACKMGR_PUBLISH_HOST` | `127.0.0.1` | Docker host bind address; set to your Tailscale IP  |
-| `STACKMGR_PORT`      | `8080`        | Port to listen on                                   |
-| `STACKMGR_WEB_ROOT`  | `/app/public` | Directory containing bundled frontend assets        |
-| `STACKMGR_IMAGE`     | **required**  | Docker image tag to run (pin to a `vX.Y.Z` release) |
+| Variable                | Default       | Description                                                    |
+|-------------------------|---------------|----------------------------------------------------------------|
+| `STACKMGR_TOKEN`        | **required**  | Bearer token for API authentication                            |
+| `STACKMGR_BIND_HOST`    | `127.0.0.1`   | App listen address; Docker uses `0.0.0.0` inside the container |
+| `STACKMGR_PUBLISH_HOST` | `127.0.0.1`   | Docker host bind address; set to your Tailscale IP             |
+| `STACKMGR_PORT`         | `8080`        | Port to listen on                                              |
+| `STACKMGR_WEB_ROOT`     | `/app/public` | Directory containing bundled frontend assets                   |
+| `STACKMGR_IMAGE`        | **required**  | Docker image tag to run (pin to a `vX.Y.Z` release)            |
 
 > **Security note:** when running from source, `STACKMGR_BIND_HOST` defaults to `127.0.0.1`.  
 > In Docker, leave `STACKMGR_BIND_HOST=0.0.0.0` so the app can bind inside the container, and control external exposure with `STACKMGR_PUBLISH_HOST`.
