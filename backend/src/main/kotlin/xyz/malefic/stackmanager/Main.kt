@@ -1,5 +1,10 @@
 package xyz.malefic.stackmanager
 
+import io.undertow.Undertow as RawUndertow
+import io.undertow.server.handlers.BlockingHandler as UndertowBlockingHandler
+import java.io.File
+import java.net.BindException
+import java.net.URLConnection
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.HEAD
@@ -16,20 +21,16 @@ import org.http4k.server.Http4kServer
 import org.http4k.server.Http4kUndertowHttpHandler
 import org.http4k.server.ServerConfig
 import org.http4k.server.asServer
-import java.io.File
-import java.net.URLConnection
-import io.undertow.Undertow as RawUndertow
-import io.undertow.server.handlers.BlockingHandler as UndertowBlockingHandler
 
 /**
  * Custom [ServerConfig] that binds Undertow to a specific [host] and [port].
  *
  * The standard http4k [org.http4k.server.Undertow] always binds to `0.0.0.0`.
- * This variant restricts the listener to [host] so the API is only reachable on
- * the configured interface (e.g. a Tailscale IP), never on the public NIC.
+ * This variant lets the caller request a specific listener address so the API
+ * can be kept off public interfaces when that address exists.
  *
  * @param port TCP port to listen on.
- * @param host Network interface address to bind (e.g. `127.0.0.1` or a Tailscale IP).
+ * @param host Requested network interface address to bind (e.g. `127.0.0.1` or a Tailscale IP).
  */
 class BoundUndertow(
     private val port: Int,
@@ -79,10 +80,40 @@ fun main() {
             }
         }
 
-    val server = app.asServer(BoundUndertow(Config.port, Config.bindHost)).start()
-    println("StackManager backend+frontend started on ${Config.bindHost}:${Config.port} (web root: ${webRoot.absolutePath})")
+    val server = startServer(app, Config.port, Config.bindHost)
+    println("StackManager backend+frontend started on port ${Config.port} (web root: ${webRoot.absolutePath})")
     server.block()
 }
+
+private fun startServer(
+    app: HttpHandler,
+    port: Int,
+    bindHost: String,
+): Http4kServer {
+    fun startOn(host: String) = app.asServer(BoundUndertow(port, host)).start()
+
+    return try {
+        startOn(bindHost)
+    } catch (e: Exception) {
+        if (bindHost != "0.0.0.0" && causesBindAddressError(e)) {
+            System.err.println(
+                "WARN: failed to bind to '$bindHost' (${rootCauseMessage(e)}); retrying on 0.0.0.0",
+            )
+            startOn("0.0.0.0")
+        } else {
+            throw e
+        }
+    }
+}
+
+private fun causesBindAddressError(t: Throwable): Boolean =
+    generateSequence(t) { it.cause }.any { it is BindException } &&
+        generateSequence(t) { it.cause }.any {
+            it.message?.contains("requested address", ignoreCase = true) == true
+        }
+
+private fun rootCauseMessage(t: Throwable): String =
+    generateSequence(t) { it.cause }.lastOrNull()?.message ?: t.message.orEmpty()
 
 private fun serveFrontend(
     req: Request,

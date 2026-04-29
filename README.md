@@ -89,7 +89,8 @@ sudo cp deploy/.env.example /etc/stackmanager/stackmanager.env
 # 3. Edit the env file with a strong random token
 sudo nano /etc/stackmanager/stackmanager.env
 #   STACKMGR_TOKEN=<replace-with-a-long-random-secret>
-#   STACKMGR_BIND_HOST=<your-tailscale-ip>
+#   STACKMGR_BIND_HOST=0.0.0.0
+#   STACKMGR_PUBLISH_HOST=<your-tailscale-ip>
 #   STACKMGR_IMAGE=omydagreat/stackmanager:vX.Y.Z
 
 # 4. Lock down env file permissions (contains secrets)
@@ -131,14 +132,14 @@ STACKMGR_WEB_ROOT=$(pwd)/backend/build/web \
 | Variable             | Default       | Description                                         |
 |----------------------|---------------|-----------------------------------------------------|
 | `STACKMGR_TOKEN`     | **required**  | Bearer token for API authentication                 |
-| `STACKMGR_BIND_HOST` | `127.0.0.1`   | Host/IP to bind — set to your Tailscale IP          |
+| `STACKMGR_BIND_HOST` | `127.0.0.1`   | App listen address; Docker uses `0.0.0.0` inside the container |
+| `STACKMGR_PUBLISH_HOST` | `127.0.0.1` | Docker host bind address; set to your Tailscale IP  |
 | `STACKMGR_PORT`      | `8080`        | Port to listen on                                   |
 | `STACKMGR_WEB_ROOT`  | `/app/public` | Directory containing bundled frontend assets        |
 | `STACKMGR_IMAGE`     | **required**  | Docker image tag to run (pin to a `vX.Y.Z` release) |
 
-> **Security note:** `STACKMGR_BIND_HOST` defaults to `127.0.0.1`.  
-> For Tailscale access, set it to your Pi's Tailscale IP (`tailscale ip -4`).  
-> Never set it to `0.0.0.0` unless you have an independent firewall in place.
+> **Security note:** when running from source, `STACKMGR_BIND_HOST` defaults to `127.0.0.1`.  
+> In Docker, leave `STACKMGR_BIND_HOST=0.0.0.0` so the app can bind inside the container, and control external exposure with `STACKMGR_PUBLISH_HOST`.
 
 ---
 
