@@ -18,7 +18,6 @@ import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
-import com.varabyte.kobweb.compose.ui.graphics.Colors
 import com.varabyte.kobweb.compose.ui.modifiers.background
 import com.varabyte.kobweb.compose.ui.modifiers.border
 import com.varabyte.kobweb.compose.ui.modifiers.borderBottom
@@ -33,6 +32,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.flexGrow
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
 import com.varabyte.kobweb.compose.ui.modifiers.fontWeight
 import com.varabyte.kobweb.compose.ui.modifiers.height
+import com.varabyte.kobweb.compose.ui.modifiers.letterSpacing
 import com.varabyte.kobweb.compose.ui.modifiers.margin
 import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.minWidth
@@ -56,6 +56,7 @@ import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.DisplayStyle
 import org.jetbrains.compose.web.css.LineStyle
 import org.jetbrains.compose.web.css.Position
+import org.jetbrains.compose.web.css.em
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.s
@@ -66,38 +67,41 @@ import xyz.malefic.stackmanager.util.Pages
 import kotlin.time.Duration.Companion.milliseconds
 import com.varabyte.kobweb.compose.ui.graphics.Color as Kolor
 
-// Silk-themed styles
 val NavBarStyle =
     CssStyle.base {
         Modifier
             .fillMaxWidth()
-            .height(60.px)
+            .height(74.px)
             .background(
                 Background.of(
                     BackgroundImage.of(
                         linearGradient(
                             LinearGradient.Direction.ToRight,
                         ) {
-                            add(Color("#f8f9fa"), 0.percent)
-                            add(Color("#e9ecef"), 50.percent)
-                            add(Color("#dee2e6"), 100.percent)
+                            add(Color("#060a13"), 0.percent)
+                            add(Color("#0b1829"), 48.percent)
+                            add(Color("#11081c"), 100.percent)
                         },
                     ),
                 ),
-            ).boxShadow(0.px, 2.px, 4.px, color = Kolor.rgba(0f, 0f, 0f, 0.1f))
-            .borderBottom(1.px, LineStyle.Solid, Color("#dee2e6"))
+            ).boxShadow(0.px, 0.px, 20.px, color = Kolor.rgba(0f, 255f, 195f, .25f))
+            .borderBottom(1.px, LineStyle.Solid, Color("#00ffc3"))
     }
 
 val NavItemStyle =
     Modifier
-        .padding(12.px, 20.px)
+        .padding(10.px, 18.px)
         .margin(0.px, 4.px)
-        .borderRadius(6.px)
+        .borderRadius(10.px)
+        .background(Color("#111d31"))
+        .border(1.px, LineStyle.Solid, Color("#3df3ff"))
+        .boxShadow(0.px, 0.px, 10.px, color = Kolor.rgba(0f, 255f, 195f, .2f))
         .styleModifier {
             textDecoration("none")
-        }.color(Color("#495057"))
-        .fontSize(14.px)
-        .fontWeight(500)
+        }.letterSpacing(.03.em)
+        .color(Color("#dbfff7"))
+        .fontSize(13.px)
+        .fontWeight(700)
         .transition(Transition.all(0.2.s))
         .whiteSpace(WhiteSpace.NoWrap)
 
@@ -109,18 +113,18 @@ val NavItemHoverStyle =
 
         hover {
             Modifier
-                .background(Kolor.rgba(108f, 117f, 125f, 0.1f))
-                .color(Color("#212529"))
-                .translateY((-1).px)
+                .background(Color("#172a45"))
+                .color(Color("#88ffe2"))
+                .translateY((-2).px)
         }
     }
 
 val ActiveNavItemStyle =
     CssStyle.base {
         NavItemStyle
-            .background(Kolor.rgba(13f, 110f, 253f, 0.1f))
-            .color(Color("#0d6efd"))
-            .fontWeight(600)
+            .background(Color("#2b1137"))
+            .color(Color("#ff9ef0"))
+            .fontWeight(700)
     }
 
 val DropdownStyle =
@@ -136,11 +140,11 @@ val DropdownContentStyle =
             .position(Position.Absolute)
             .top(100.percent)
             .right(0.px)
-            .background(Colors.White)
+            .background(Color("#0b1628"))
             .minWidth(180.px)
-            .boxShadow(0.px, 8.px, 16.px, color = Kolor.rgba(0f, 0f, 0f, 0.15f))
-            .borderRadius(8.px)
-            .border(1.px, LineStyle.Solid, Color("#dee2e6"))
+            .boxShadow(0.px, 0.px, 14.px, color = Kolor.rgba(0f, 255f, 195f, .18f))
+            .borderRadius(10.px)
+            .border(1.px, LineStyle.Solid, Color("#3df3ff"))
             .zIndex(1000)
             .padding(8.px, 0.px)
     }
@@ -151,9 +155,9 @@ val DropdownItemStyle =
         .padding(10.px, 16.px)
         .styleModifier {
             textDecoration("none")
-        }.color(Color("#495057"))
+        }.color(Color("#c9fff1"))
         .fontSize(14.px)
-        .transition(Transition.of("background-color", 0.15.s))
+        .transition(Transition.of("background-color", .15.s))
         .whiteSpace(WhiteSpace.NoWrap)
 
 val DropdownItemHoverStyle =
@@ -163,7 +167,7 @@ val DropdownItemHoverStyle =
         }
 
         hover {
-            Modifier.background(Color("#f8f9fa"))
+            Modifier.background(Color("#12283f"))
         }
     }
 
@@ -171,17 +175,17 @@ val DropdownButtonStyle =
     Modifier
         .padding(12.px, 16.px)
         .margin(0.px, 4.px)
-        .borderRadius(6.px)
-        .background(Colors.Transparent)
-        .border(1.px, LineStyle.Solid, Color("#dee2e6"))
-        .color(Color("#495057"))
-        .fontSize(14.px)
-        .fontWeight(500)
+        .borderRadius(10.px)
+        .background(Color("#1b0f2c"))
+        .border(1.px, LineStyle.Solid, Color("#00ffc3"))
+        .boxShadow(0.px, 0.px, 10.px, color = Kolor.rgba(0f, 255f, 195f, .2f))
+        .color(Color("#d8fff6"))
+        .fontSize(13.px)
+        .fontWeight(700)
         .cursor(Cursor.Pointer)
-        .transition(Transition.all(0.2.s))
-        .styleModifier {
-            property("white-space", "nowrap")
-        }
+        .transition(Transition.all(.2.s))
+        .whiteSpace(WhiteSpace.NoWrap)
+        .letterSpacing(.03.em)
 
 val DropdownButtonHoverStyle =
     CssStyle {
@@ -191,10 +195,10 @@ val DropdownButtonHoverStyle =
 
         hover {
             Modifier
-                .background(Kolor.rgba(108f, 117f, 125f, 0.1f))
+                .background(Color("#28153e"))
                 .border {
-                    color(Color("#adb5bd"))
-                }
+                    color(Color("#3df3ff"))
+                }.translateY((-2).px)
         }
     }
 
@@ -223,7 +227,20 @@ fun NavBarLayout(content: @Composable () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(Modifier.flexGrow(1)) {
-                    // Brand area — customize as needed
+                    Box(
+                        Modifier
+                            .padding(10.px, 14.px)
+                            .borderRadius(10.px)
+                            .display(DisplayStyle.InlineBlock)
+                            .background(Color("#101e32"))
+                            .border(1.px, LineStyle.Solid, Color("#00ffc3"))
+                            .letterSpacing(.08.em)
+                            .fontSize(14.px)
+                            .color(Color("#8effdd"))
+                            .fontWeight(700),
+                    ) {
+                        Text("STACK MANAGER")
+                    }
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -280,9 +297,9 @@ fun NavBarLayout(content: @Composable () -> Unit) {
                                                 modifier =
                                                     if (isActive) {
                                                         DropdownItemStyle
-                                                            .background(Kolor.rgba(13f, 110f, 253f, 0.1f))
-                                                            .color(Color("#0d6efd"))
-                                                            .fontWeight(600)
+                                                            .background(Color("#2b1137"))
+                                                            .color(Color("#ff9ef0"))
+                                                            .fontWeight(700)
                                                     } else {
                                                         DropdownItemHoverStyle.toModifier()
                                                     },

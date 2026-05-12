@@ -182,6 +182,3 @@ gradle-app.setting
 *.hprof
 
 # End of https://www.toptal.com/developers/gitignore/api/kotlin,intellij,gradle
-
-.idea/google-java-format.xml
-.idea/ktlint-plugin.xml
