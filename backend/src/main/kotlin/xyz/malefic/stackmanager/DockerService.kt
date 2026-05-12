@@ -1,6 +1,7 @@
 package xyz.malefic.stackmanager
 
 import java.io.File
+import java.io.IOException
 
 private val STACK_NAME_REGEX = Regex("^[a-z0-9-]+$")
 
@@ -26,17 +27,33 @@ data class CommandResult(
     val stderr: String,
 )
 
+class DockerRuntimeUnavailableException(
+    message: String,
+    cause: Throwable,
+) : RuntimeException(message, cause)
+
 fun runDockerCompose(
     stackName: String,
     vararg args: String,
 ): CommandResult {
     val dir = stackDir(stackName)
-    val cmd = listOf("docker", "compose") + args.toList()
-    val process =
+    val cmd = listOf(Config.dockerBin, "compose") + args.toList()
+    val processBuilder =
         ProcessBuilder(cmd)
             .directory(dir)
             .redirectErrorStream(false)
-            .start()
+    Config.dockerHost?.let { processBuilder.environment()["DOCKER_HOST"] = it }
+    val process =
+        try {
+            processBuilder.start()
+        } catch (e: IOException) {
+            val dockerHostInfo = Config.dockerHost?.let { " and DOCKER_HOST='$it'" } ?: ""
+            throw DockerRuntimeUnavailableException(
+                "Unable to execute '${cmd.joinToString(" ")}' in '${dir.absolutePath}'. " +
+                    "Verify STACKMGR_DOCKER_BIN points to a valid docker CLI binary$dockerHostInfo.",
+                e,
+            )
+        }
     // Capture stdout and stderr on dedicated threads to prevent pipe-buffer
     // deadlocks when either stream produces enough output to fill the OS pipe buffer.
     var stdout = ""

@@ -11,6 +11,8 @@ services:
       # The app runs inside the container, so it should listen on all interfaces there.
       - STACKMGR_BIND_HOST=${STACKMGR_BIND_HOST:-0.0.0.0}
       - STACKMGR_PORT=8080
+      - STACKMGR_DOCKER_BIN=${STACKMGR_DOCKER_BIN:-/usr/bin/docker}
+      - STACKMGR_DOCKER_HOST=${STACKMGR_DOCKER_HOST:-unix:///var/run/docker.sock}
     ports:
       # Only publish the host port on your Tailscale IP so it is never exposed publicly
       - "${STACKMGR_PUBLISH_HOST:-127.0.0.1}:8080:8080"

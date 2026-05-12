@@ -92,6 +92,8 @@ sudo nano /etc/stackmanager/stackmanager.env
 #   STACKMGR_BIND_HOST=0.0.0.0
 #   STACKMGR_PUBLISH_HOST=<your-tailscale-ip>
 #   STACKMGR_IMAGE=omydagreat/stackmanager:vX.Y.Z
+#   STACKMGR_DOCKER_BIN=/usr/bin/docker
+#   STACKMGR_DOCKER_HOST=unix:///var/run/docker.sock
 
 # 4. Lock down env file permissions (contains secrets)
 sudo chown root:root /etc/stackmanager/stackmanager.env
@@ -137,6 +139,8 @@ STACKMGR_WEB_ROOT=$(pwd)/backend/build/web \
 | `STACKMGR_PORT`         | `8080`        | Port to listen on                                              |
 | `STACKMGR_WEB_ROOT`     | `/app/public` | Directory containing bundled frontend assets                   |
 | `STACKMGR_IMAGE`        | **required**  | Docker image tag to run (pin to a `vX.Y.Z` release)            |
+| `STACKMGR_DOCKER_BIN`   | `/usr/bin/docker` | Docker CLI path used by stack actions                      |
+| `STACKMGR_DOCKER_HOST`  | `unix:///var/run/docker.sock` | Docker daemon endpoint passed to CLI             |
 
 > **Security note:** when running from source, `STACKMGR_BIND_HOST` defaults to `127.0.0.1`.  
 > In Docker, leave `STACKMGR_BIND_HOST=0.0.0.0` so the app can bind inside the container, and control external exposure with `STACKMGR_PUBLISH_HOST`.

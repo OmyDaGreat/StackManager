@@ -10,6 +10,7 @@ import org.http4k.core.Response
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
+import org.http4k.core.Status.Companion.SERVICE_UNAVAILABLE
 import org.http4k.routing.bind
 import org.http4k.routing.path
 import org.http4k.routing.routes
@@ -49,6 +50,20 @@ private fun jsonResponse(
     body: String,
 ) = Response(status).body(body).header("Content-Type", "application/json")
 
+private fun composeCommandResponse(
+    stackName: String,
+    vararg args: String,
+): Response =
+    try {
+        val result = runDockerCompose(stackName, *args)
+        jsonResponse(OK, json.encodeToString(CommandResponse(result.exitCode, result.stdout, result.stderr)))
+    } catch (e: DockerRuntimeUnavailableException) {
+        jsonResponse(
+            SERVICE_UNAVAILABLE,
+            json.encodeToString(ErrorResponse(e.message ?: "docker runtime unavailable")),
+        )
+    }
+
 fun stackRoutes() =
     routes(
         "/api/stacks" bind GET to { _: Request ->
@@ -78,29 +93,25 @@ fun stackRoutes() =
             val name = req.path("name") ?: return@to jsonResponse(BAD_REQUEST, json.encodeToString(ErrorResponse("missing name")))
             if (!isValidStackName(name)) return@to jsonResponse(BAD_REQUEST, json.encodeToString(ErrorResponse("invalid stack name")))
             if (!composeFile(name).exists()) return@to jsonResponse(NOT_FOUND, json.encodeToString(ErrorResponse("stack not found")))
-            val result = runDockerCompose(name, "up", "-d")
-            jsonResponse(OK, json.encodeToString(CommandResponse(result.exitCode, result.stdout, result.stderr)))
+            composeCommandResponse(name, "up", "-d")
         },
         "/api/stacks/{name}/stop" bind POST to { req: Request ->
             val name = req.path("name") ?: return@to jsonResponse(BAD_REQUEST, json.encodeToString(ErrorResponse("missing name")))
             if (!isValidStackName(name)) return@to jsonResponse(BAD_REQUEST, json.encodeToString(ErrorResponse("invalid stack name")))
             if (!composeFile(name).exists()) return@to jsonResponse(NOT_FOUND, json.encodeToString(ErrorResponse("stack not found")))
-            val result = runDockerCompose(name, "down")
-            jsonResponse(OK, json.encodeToString(CommandResponse(result.exitCode, result.stdout, result.stderr)))
+            composeCommandResponse(name, "down")
         },
         "/api/stacks/{name}/pull" bind POST to { req: Request ->
             val name = req.path("name") ?: return@to jsonResponse(BAD_REQUEST, json.encodeToString(ErrorResponse("missing name")))
             if (!isValidStackName(name)) return@to jsonResponse(BAD_REQUEST, json.encodeToString(ErrorResponse("invalid stack name")))
             if (!composeFile(name).exists()) return@to jsonResponse(NOT_FOUND, json.encodeToString(ErrorResponse("stack not found")))
-            val result = runDockerCompose(name, "pull")
-            jsonResponse(OK, json.encodeToString(CommandResponse(result.exitCode, result.stdout, result.stderr)))
+            composeCommandResponse(name, "pull")
         },
         "/api/stacks/{name}/logs" bind GET to { req: Request ->
             val name = req.path("name") ?: return@to jsonResponse(BAD_REQUEST, json.encodeToString(ErrorResponse("missing name")))
             if (!isValidStackName(name)) return@to jsonResponse(BAD_REQUEST, json.encodeToString(ErrorResponse("invalid stack name")))
             if (!composeFile(name).exists()) return@to jsonResponse(NOT_FOUND, json.encodeToString(ErrorResponse("stack not found")))
             val tail = req.query("tail") ?: "100"
-            val result = runDockerCompose(name, "logs", "--tail", tail, "--no-color")
-            jsonResponse(OK, json.encodeToString(CommandResponse(result.exitCode, result.stdout, result.stderr)))
+            composeCommandResponse(name, "logs", "--tail", tail, "--no-color")
         },
     )
