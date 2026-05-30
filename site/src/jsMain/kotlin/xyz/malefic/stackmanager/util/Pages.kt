@@ -5,5 +5,6 @@ enum class Pages(
     val route: String,
 ) {
     STACKS("Stacks", "/stacks"),
+    SETTINGS("Settings", "/settings"),
     ABOUT("About", "/about"),
 }

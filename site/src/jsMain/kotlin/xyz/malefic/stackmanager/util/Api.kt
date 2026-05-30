@@ -95,7 +95,7 @@ suspend fun fetchJson(
 
     // Check for 401 or UNAUTHORIZED error code and redirect to login page
     if (response.status.toInt() == 401) {
-        window.location.href = "/login"
+        window.location.href = "/settings"
         return ""
     }
 
@@ -104,7 +104,7 @@ suspend fun fetchJson(
         try {
             val errorResp = json.decodeFromString<ErrorResponse>(responseBody)
             if (errorResp.code == "UNAUTHORIZED") {
-                window.location.href = "/login"
+                window.location.href = "/settings"
                 return ""
             }
         } catch (_: Exception) {

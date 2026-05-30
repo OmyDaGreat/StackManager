@@ -129,7 +129,7 @@ fun StacksPage() {
                     Button(
                         attrs =
                             AppStyles.actionButton(Color("#2f113a")).toAttrs {
-                                onClick { ctx.router.navigateTo("/login") }
+                                onClick { ctx.router.navigateTo("/settings") }
                             },
                     ) { Text("SETTINGS") }
                 }

@@ -47,9 +47,9 @@ import xyz.malefic.stackmanager.util.getToken
 import xyz.malefic.stackmanager.util.setBaseUrl
 import xyz.malefic.stackmanager.util.setToken
 
-@Page
+@Page("/settings")
 @Composable
-fun LoginPage() {
+fun SettingsPage() {
     val ctx = rememberPageContext()
     var token by remember { mutableStateOf(getToken()) }
     var baseUrl by remember { mutableStateOf(getBaseUrl()) }
