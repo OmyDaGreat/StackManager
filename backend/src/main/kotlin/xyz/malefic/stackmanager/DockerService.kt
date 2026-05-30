@@ -4,18 +4,25 @@ import java.io.File
 import java.io.IOException
 
 private val STACK_NAME_REGEX = Regex("^[a-z0-9-]+$")
+private val COMPOSE_FILE_NAMES = listOf("compose.yml", "docker-compose.yml")
 
 fun isValidStackName(name: String): Boolean = STACK_NAME_REGEX.matches(name)
 
 fun stackDir(name: String): File = File("${Config.COMPOSE_ROOT}/$name")
 
-fun composeFile(name: String): File = File("${Config.COMPOSE_ROOT}/$name/compose.yml")
+fun composeFile(name: String): File {
+    val dir = stackDir(name)
+    return COMPOSE_FILE_NAMES
+        .map { File(dir, it) }
+        .firstOrNull { it.exists() }
+        ?: File(dir, COMPOSE_FILE_NAMES.first())
+}
 
 fun listStacks(): List<String> {
     val root = File(Config.COMPOSE_ROOT)
     if (!root.exists()) return emptyList()
     return root
-        .listFiles { f -> f.isDirectory && File(f, "compose.yml").exists() }
+        .listFiles { f -> f.isDirectory && COMPOSE_FILE_NAMES.any { File(f, it).exists() } }
         ?.map { it.name }
         ?.sorted()
         ?: emptyList()

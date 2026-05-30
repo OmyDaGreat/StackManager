@@ -4,12 +4,12 @@ A Tailscale-only Docker Compose stack manager: a Kotlin/http4k backend API + Kob
 
 ## Architecture
 
-- **backend/** — Kotlin/JVM HTTP API (http4k + Undertow) that also serves the frontend SPA. Manages Docker Compose stacks under `/srv/compose/<stack-name>/compose.yml`.
+- **backend/** — Kotlin/JVM HTTP API (http4k + Undertow) that also serves the frontend SPA. Manages Docker Compose stacks under `/srv/compose/<stack-name>/{compose.yml,docker-compose.yml}`.
 - **site/** — Kobweb (Kotlin/JS + Compose HTML) frontend SPA, bundled into the Docker image and served by the backend at `/`.
 
 File layout on the Pi:
 ```
-/srv/compose/<stack-name>/compose.yml   ← desired state / config
+/srv/compose/<stack-name>/{compose.yml,docker-compose.yml}   ← desired state / config
 /srv/containers/<container-name>/           ← runtime data / volumes (for stateful services)
 ```
 
@@ -103,9 +103,9 @@ sudo chmod 600 /etc/stackmanager/stackmanager.env
 docker compose -f /etc/stackmanager/compose.yml --env-file /etc/stackmanager/stackmanager.env up -d
 ```
 
-> **Optional:** After copying the deployment files to `/etc/stackmanager/`, you can delete the cloned repository (`rm -rf ~/stackmanager`) since all runtime files are now in place and the application itself runs from the Docker image, not the repo. Also, instead of copying the `compose.yml` and `.env.example` files, you could create them directly in `/etc/stackmanager/` if you prefer. The key point is to keep Stack Manager's own deployment files separate from the managed stack definitions under `/srv/compose/<stack-name>/compose.yml`.
+> **Optional:** After copying the deployment files to `/etc/stackmanager/`, you can delete the cloned repository (`rm -rf ~/stackmanager`) since all runtime files are now in place and the application itself runs from the Docker image, not the repo. Also, instead of copying the `compose.yml` and `.env.example` files, you could create them directly in `/etc/stackmanager/` if you prefer. The key point is to keep Stack Manager's own deployment files separate from the managed stack definitions under `/srv/compose/<stack-name>/{compose.yml,docker-compose.yml}`.
 
-> Keep StackManager's own deployment files in `/etc/stackmanager` so they stay separate from managed stack definitions under `/srv/compose/<stack-name>/compose.yml`.
+> Keep StackManager's own deployment files in `/etc/stackmanager` so they stay separate from managed stack definitions under `/srv/compose/<stack-name>/{compose.yml,docker-compose.yml}`.
 
 ### Option B: Build from source
 
@@ -226,7 +226,7 @@ All endpoints except `/api/health` require `Authorization: Bearer <token>` heade
 | POST   | `/api/stacks/{name}/pull`   | `docker compose pull`                    |
 | GET    | `/api/stacks/{name}/logs`   | Get recent logs (`?tail=N`, default 100) |
 
-Stack names must match `^[a-z0-9-]+$`. Compose files are stored at `/srv/compose/<name>/compose.yml`.
+Stack names must match `^[a-z0-9-]+$`. Compose files are stored at `/srv/compose/<name>/{compose.yml,docker-compose.yml}`.
 
 **PUT body:**
 ```json
