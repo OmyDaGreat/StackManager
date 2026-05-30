@@ -1,11 +1,7 @@
 package xyz.malefic.stackmanager
 
-import io.undertow.Undertow as RawUndertow
-import io.undertow.server.handlers.BlockingHandler as UndertowBlockingHandler
-import java.io.File
-import java.net.BindException
-import java.net.URLConnection
 import org.http4k.core.HttpHandler
+import org.http4k.core.Method
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.HEAD
 import org.http4k.core.Request
@@ -13,6 +9,7 @@ import org.http4k.core.Response
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.then
+import org.http4k.filter.AllowAllOriginPolicy
 import org.http4k.filter.CorsPolicy
 import org.http4k.filter.ServerFilters
 import org.http4k.routing.bind
@@ -21,6 +18,11 @@ import org.http4k.server.Http4kServer
 import org.http4k.server.Http4kUndertowHttpHandler
 import org.http4k.server.ServerConfig
 import org.http4k.server.asServer
+import java.io.File
+import java.net.BindException
+import java.net.URLConnection
+import io.undertow.Undertow as RawUndertow
+import io.undertow.server.handlers.BlockingHandler as UndertowBlockingHandler
 
 /**
  * Custom [ServerConfig] that binds Undertow to a specific [host] and [port].
@@ -53,7 +55,14 @@ class BoundUndertow(
 }
 
 fun main() {
-    val cors = ServerFilters.Cors(CorsPolicy.UnsafeGlobalPermissive)
+    val cors =
+        ServerFilters.Cors(
+            CorsPolicy(
+                headers = listOf("Content-Type", "Authorization"),
+                methods = Method.entries,
+                originPolicy = AllowAllOriginPolicy,
+            ),
+        )
 
     // Health check is unauthenticated so load-balancers/monitors can probe it
     val publicRoutes =
@@ -115,8 +124,7 @@ private fun causesBindAddressError(t: Throwable): Boolean =
             it.message?.contains("requested address", ignoreCase = true) == true
         }
 
-private fun rootCauseMessage(t: Throwable): String =
-    generateSequence(t) { it.cause }.lastOrNull()?.message ?: t.message.orEmpty()
+private fun rootCauseMessage(t: Throwable): String = generateSequence(t) { it.cause }.lastOrNull()?.message ?: t.message.orEmpty()
 
 private fun serveFrontend(
     req: Request,
