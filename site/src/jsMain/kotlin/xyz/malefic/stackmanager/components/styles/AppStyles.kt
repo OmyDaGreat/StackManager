@@ -18,11 +18,11 @@ import com.varabyte.kobweb.compose.ui.modifiers.fontFamily
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
 import com.varabyte.kobweb.compose.ui.modifiers.fontWeight
 import com.varabyte.kobweb.compose.ui.modifiers.height
+import com.varabyte.kobweb.compose.ui.modifiers.letterSpacing
 import com.varabyte.kobweb.compose.ui.modifiers.margin
 import com.varabyte.kobweb.compose.ui.modifiers.maxHeight
 import com.varabyte.kobweb.compose.ui.modifiers.overflow
 import com.varabyte.kobweb.compose.ui.modifiers.padding
-import com.varabyte.kobweb.compose.ui.modifiers.letterSpacing
 import com.varabyte.kobweb.compose.ui.modifiers.whiteSpace
 import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.compose.ui.modifiers.wordBreak
@@ -62,7 +62,7 @@ object AppStyles {
     val contentTitle =
         Modifier
             .color(Color("#8bffe0"))
-            .fontFamily("\"VT323\", \"Share Tech Mono\", \"JetBrains Mono\", monospace")
+            .fontFamily("VT323", "Share Tech Mono", "JetBrains Mono", "monospace")
             .fontSize(34.px)
             .letterSpacing(2.px)
 
@@ -71,7 +71,7 @@ object AppStyles {
             .border(1.px, LineStyle.Solid, Color("#00ffc3"))
             .color(Color("#e5fffa"))
             .fontWeight(700)
-            .fontFamily("\"Share Tech Mono\", \"JetBrains Mono\", monospace")
+            .fontFamily("Share Tech Mono", "JetBrains Mono", "monospace")
             .boxShadow(BoxShadow.of(0.px, 0.px, 12.px, color = rgba(0, 255, 195, .2f)))
             .cursor(Cursor.Pointer)
 
@@ -98,7 +98,7 @@ object AppStyles {
             .background(background)
             .color(Color("#e5fffa"))
             .fontWeight(700)
-            .fontFamily("\"Share Tech Mono\", \"JetBrains Mono\", monospace")
+            .fontFamily("Share Tech Mono", "JetBrains Mono", "monospace")
             .boxShadow(BoxShadow.of(0.px, 0.px, 10.px, color = rgba(0, 255, 195, .2f)))
             .cursor(Cursor.Pointer)
 
@@ -112,7 +112,7 @@ object AppStyles {
             .borderRadius(10.px)
             .background(rgba(6, 15, 27, .95f))
             .color(Color("#bafef1"))
-            .fontFamily("\"Share Tech Mono\", \"JetBrains Mono\", monospace")
+            .fontFamily("Share Tech Mono", "JetBrains Mono", "monospace")
 
     val composeTextArea =
         Modifier
@@ -126,12 +126,12 @@ object AppStyles {
             .background(rgba(5, 14, 28, .95f))
             .color(Color("#b8ffe9"))
             .fontSize(13.px)
-            .fontFamily("\"JetBrains Mono\", \"Fira Code\", \"Share Tech Mono\", monospace")
+            .fontFamily("JetBrains Mono", "Fira Code", "Share Tech Mono", "monospace")
 
     val pageLabel =
         Modifier
             .color(Color("#89ffd6"))
-            .fontFamily("\"Share Tech Mono\", \"JetBrains Mono\", monospace")
+            .fontFamily("Share Tech Mono", "JetBrains Mono", "monospace")
             .fontWeight(700)
             .margin(bottom = 8.px)
 
@@ -143,7 +143,7 @@ object AppStyles {
             .border(1.px, LineStyle.Solid, Color("#ff47d4"))
             .background(rgba(30, 10, 36, .72f))
             .color(Color("#ffd4f6"))
-            .fontFamily("\"Share Tech Mono\", \"JetBrains Mono\", monospace")
+            .fontFamily("Share Tech Mono", "JetBrains Mono", "monospace")
 
     val logsOutput =
         Modifier
@@ -155,6 +155,6 @@ object AppStyles {
             .whiteSpace(WhiteSpace.PreWrap)
             .wordBreak(WordBreak.BreakAll)
             .maxHeight(400.px)
-            .fontFamily("\"JetBrains Mono\", \"Fira Code\", monospace")
+            .fontFamily("JetBrains Mono", "Fira Code", "monospace")
             .color(Color("#b8ffe9"))
 }

@@ -47,7 +47,7 @@ private fun normalizedBaseUrl(value: String?): String = value?.trim()?.trimEnd('
 
 fun getBaseUrl(): String {
     val stored = normalizedBaseUrl(localStorage.getItem("stackmgr_base_url"))
-    return if (stored.isNotEmpty()) stored else window.location.origin.trimEnd('/')
+    return stored.ifEmpty { window.location.origin.trimEnd('/') }
 }
 
 fun setBaseUrl(url: String) {
@@ -76,7 +76,7 @@ suspend fun fetchJson(
     method: String = "GET",
     body: String? = null,
 ): String {
-    // Check if token is missing and redirect to login for API calls (not during login page itself)
+    // Check if token is missing and redirect to login page for API calls (not during login page itself)
     if (getToken().isEmpty() && !url.contains("/api/health") && !url.contains("/api/kobweb-status")) {
         window.location.href = "/login"
         // Return early to prevent further execution
@@ -93,7 +93,7 @@ suspend fun fetchJson(
     val responseBody = response.text().await()
     val contentType = response.headers.get("Content-Type")?.lowercase() ?: ""
 
-    // Check for 401 or UNAUTHORIZED error code and redirect to login
+    // Check for 401 or UNAUTHORIZED error code and redirect to login page
     if (response.status.toInt() == 401) {
         window.location.href = "/login"
         return ""
@@ -107,7 +107,7 @@ suspend fun fetchJson(
                 window.location.href = "/login"
                 return ""
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // Not a valid error response, continue with normal error handling
         }
     }
@@ -122,7 +122,7 @@ suspend fun fetchJson(
             if (isHtml) {
                 "Received HTML instead of JSON. Check your backend base URL in Settings (e.g. http://100.x.y.z:8080)."
             } else {
-                "Received non-JSON response (Content-Type: ${if (contentType.isEmpty()) "missing" else contentType})."
+                "Received non-JSON response (Content-Type: ${contentType.ifEmpty { "missing" }})."
             }
         throw IllegalStateException(details)
     }
