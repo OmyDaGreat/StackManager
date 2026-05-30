@@ -65,10 +65,6 @@ fun SettingsPage() {
         ) {
             H2(attrs = AppStyles.contentTitle.toAttrs()) { Text("CONTROL LINK // SETTINGS") }
 
-            P(
-                attrs = AppStyles.statusText.toAttrs(),
-            ) { Text("Set the backend bearer token. Base URL is optional and defaults to this same server.") }
-
             Label(attrs = AppStyles.pageLabel.toAttrs()) { Text("BEARER TOKEN") }
             Input(
                 type = InputType.Password,
@@ -76,7 +72,7 @@ fun SettingsPage() {
                     Modifier
                         .width(100.percent)
                         .padding(10.px, 12.px)
-                        .margin(top = 4.px, bottom = 20.px)
+                        .margin(top = 4.px, bottom = 8.px)
                         .boxSizing(BoxSizing.BorderBox)
                         .border(1.px, LineStyle.Solid, Color("#3df3ff"))
                         .borderRadius(10.px)
@@ -87,6 +83,10 @@ fun SettingsPage() {
                             onInput { token = it.value }
                         },
             )
+
+            P(attrs = AppStyles.statusText.margin(top = 0.px, bottom = 10.px).toAttrs()) {
+                Text("The base URL is optional and defaults to the server associated with this web instance (assuming there is one).")
+            }
 
             Label(attrs = AppStyles.pageLabel.toAttrs()) { Text("BACKEND BASE URL OVERRIDE (optional)") }
             Input(

@@ -6,9 +6,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
@@ -24,6 +21,14 @@ import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.toAttrs
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
+import com.varabyte.kobweb.silk.components.icons.fa.FaArrowRotateRight
+import com.varabyte.kobweb.silk.components.icons.fa.FaCheck
+import com.varabyte.kobweb.silk.components.icons.fa.FaGear
+import com.varabyte.kobweb.silk.components.icons.fa.FaPlus
+import com.varabyte.kobweb.silk.components.icons.fa.FaXmark
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Button
@@ -35,6 +40,7 @@ import xyz.malefic.stackmanager.components.styles.AppStyles
 import xyz.malefic.stackmanager.util.StackListResponse
 import xyz.malefic.stackmanager.util.fetchJson
 import xyz.malefic.stackmanager.util.json
+import kotlin.time.Duration.Companion.milliseconds
 
 @Page
 @Composable
@@ -62,7 +68,7 @@ fun StacksPage() {
 
         // Auto-poll for external changes every 10 seconds
         while (true) {
-            delay(10000)
+            delay(10000.milliseconds)
             try {
                 val resp = fetchJson("/api/stacks")
                 val result = json.decodeFromString<StackListResponse>(resp)
@@ -102,7 +108,7 @@ fun StacksPage() {
                             AppStyles.actionButton(Color("#162f45")).toAttrs {
                                 onClick { ctx.router.navigateTo("/stack/new") }
                             },
-                    ) { Text("+ NEW STACK") }
+                    ) { FaPlus() }
                 }
                 Box(Modifier.margin(left = 8.px)) {
                     Button(
@@ -123,7 +129,7 @@ fun StacksPage() {
                                     }
                                 }
                             },
-                    ) { Text("REFRESH") }
+                    ) { FaArrowRotateRight() }
                 }
                 Box(Modifier.margin(left = 8.px)) {
                     Button(
@@ -131,7 +137,7 @@ fun StacksPage() {
                             AppStyles.actionButton(Color("#2f113a")).toAttrs {
                                 onClick { ctx.router.navigateTo("/settings") }
                             },
-                    ) { Text("SETTINGS") }
+                    ) { FaGear() }
                 }
             }
 
@@ -143,23 +149,29 @@ fun StacksPage() {
                     if (pendingRemoved > 0) parts.add("$pendingRemoved removed")
                     P(attrs = AppStyles.statusText.toAttrs()) { Text(parts.joinToString(", ") + " detected") }
                     Box(Modifier.margin(left = 12.px)) {
-                        Button(attrs = AppStyles.compactActionButton(Color("#12364f")).toAttrs {
-                            onClick {
-                                stacks = pendingStacks!!
-                                pendingStacks = null
-                                pendingAdded = 0
-                                pendingRemoved = 0
-                            }
-                        }) { Text("APPLY") }
+                        Button(
+                            attrs =
+                                AppStyles.compactActionButton(Color("#12364f")).toAttrs {
+                                    onClick {
+                                        stacks = pendingStacks!!
+                                        pendingStacks = null
+                                        pendingAdded = 0
+                                        pendingRemoved = 0
+                                    }
+                                },
+                        ) { FaCheck() }
                     }
                     Box(Modifier.margin(left = 8.px)) {
-                        Button(attrs = AppStyles.compactActionButton(Color("#6f6f6f")).toAttrs {
-                            onClick {
-                                pendingStacks = null
-                                pendingAdded = 0
-                                pendingRemoved = 0
-                            }
-                        }) { Text("DISMISS") }
+                        Button(
+                            attrs =
+                                AppStyles.compactActionButton(Color("#6f6f6f")).toAttrs {
+                                    onClick {
+                                        pendingStacks = null
+                                        pendingAdded = 0
+                                        pendingRemoved = 0
+                                    }
+                                },
+                        ) { FaXmark() }
                     }
                 }
             }

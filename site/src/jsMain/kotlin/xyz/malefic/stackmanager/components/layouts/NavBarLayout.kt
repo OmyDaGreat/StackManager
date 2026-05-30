@@ -1,11 +1,6 @@
 package xyz.malefic.stackmanager.components.layouts
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import com.varabyte.kobweb.compose.css.Background
 import com.varabyte.kobweb.compose.css.BackgroundImage
 import com.varabyte.kobweb.compose.css.Cursor
@@ -47,6 +42,9 @@ import com.varabyte.kobweb.compose.ui.modifiers.zIndex
 import com.varabyte.kobweb.compose.ui.styleModifier
 import com.varabyte.kobweb.core.layout.Layout
 import com.varabyte.kobweb.core.rememberPageContext
+import com.varabyte.kobweb.silk.components.icons.fa.FaBarsStaggered
+import com.varabyte.kobweb.silk.components.icons.fa.FaGear
+import com.varabyte.kobweb.silk.components.icons.fa.FaInfo
 import com.varabyte.kobweb.silk.components.navigation.Link
 import com.varabyte.kobweb.silk.style.CssStyle
 import com.varabyte.kobweb.silk.style.base
@@ -61,10 +59,8 @@ import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.s
 import org.jetbrains.compose.web.css.textDecoration
-import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
 import xyz.malefic.stackmanager.util.Pages
-import kotlin.time.Duration.Companion.milliseconds
 import com.varabyte.kobweb.compose.ui.graphics.Color as Kolor
 
 val NavBarStyle =
@@ -207,12 +203,6 @@ val DropdownButtonHoverStyle =
 fun NavBarLayout(content: @Composable () -> Unit) {
     val ctx = rememberPageContext()
     val currentRoute = ctx.route.path
-    var isDropdownOpen by remember { mutableStateOf(false) }
-
-    val maxVisiblePages = 4
-    val allPages = Pages.entries
-    val visiblePages = allPages.take(maxVisiblePages)
-    val overflowPages = allPages.drop(maxVisiblePages)
 
     Column(Modifier.fillMaxSize()) {
         Box(
@@ -244,7 +234,7 @@ fun NavBarLayout(content: @Composable () -> Unit) {
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    visiblePages.forEach { page ->
+                    Pages.entries.forEach { page ->
                         val isActive = page.isCurrentPage(currentRoute)
                         val pageRoute = page.route
 
@@ -257,58 +247,10 @@ fun NavBarLayout(content: @Composable () -> Unit) {
                                     NavItemHoverStyle.toModifier()
                                 },
                         ) {
-                            Text(page.value)
-                        }
-                    }
-
-                    if (overflowPages.isNotEmpty()) {
-                        Box(DropdownStyle.toModifier()) {
-                            Div(
-                                attrs = {
-                                    onClick { isDropdownOpen = !isDropdownOpen }
-                                },
-                            ) {
-                                Box(
-                                    DropdownButtonHoverStyle.toModifier(),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text("More")
-                                        Box(
-                                            Modifier
-                                                .margin(left = 8.px)
-                                                .fontSize(10.px),
-                                        ) {
-                                            Text(if (isDropdownOpen) "▲" else "▼")
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (isDropdownOpen) {
-                                Box(DropdownContentStyle.toModifier()) {
-                                    Column {
-                                        overflowPages.forEach { page ->
-                                            val isActive = page.isCurrentPage(currentRoute)
-                                            val pageRoute = page.route
-
-                                            Link(
-                                                path = pageRoute,
-                                                modifier =
-                                                    if (isActive) {
-                                                        DropdownItemStyle
-                                                            .background(Color("#2b1137"))
-                                                            .color(Color("#ff9ef0"))
-                                                            .fontWeight(700)
-                                                    } else {
-                                                        DropdownItemHoverStyle.toModifier()
-                                                    },
-                                            ) {
-                                                Text(page.value)
-                                            }
-                                        }
-                                    }
-                                }
+                            when (page) {
+                                Pages.STACKS -> FaBarsStaggered()
+                                Pages.SETTINGS -> FaGear()
+                                Pages.ABOUT -> FaInfo()
                             }
                         }
                     }
@@ -318,13 +260,6 @@ fun NavBarLayout(content: @Composable () -> Unit) {
 
         Box(Modifier.fillMaxSize()) {
             content()
-        }
-    }
-
-    LaunchedEffect(isDropdownOpen) {
-        if (isDropdownOpen) {
-            kotlinx.coroutines.delay(5000.milliseconds)
-            isDropdownOpen = false
         }
     }
 }
