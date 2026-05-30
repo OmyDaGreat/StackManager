@@ -65,7 +65,9 @@ fun LoginPage() {
         ) {
             H2(attrs = AppStyles.contentTitle.toAttrs()) { Text("CONTROL LINK // SETTINGS") }
 
-            P(attrs = AppStyles.statusText.toAttrs()) { Text("Set the backend bearer token. Base URL is optional and defaults to this same server.") }
+            P(
+                attrs = AppStyles.statusText.toAttrs(),
+            ) { Text("Set the backend bearer token. Base URL is optional and defaults to this same server.") }
 
             Label(attrs = AppStyles.pageLabel.toAttrs()) { Text("BEARER TOKEN") }
             Input(
