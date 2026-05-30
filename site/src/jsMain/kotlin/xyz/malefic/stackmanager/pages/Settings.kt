@@ -72,7 +72,7 @@ fun SettingsPage() {
                     Modifier
                         .width(100.percent)
                         .padding(10.px, 12.px)
-                        .margin(top = 4.px, bottom = 8.px)
+                        .margin(top = 4.px, bottom = 20.px)
                         .boxSizing(BoxSizing.BorderBox)
                         .border(1.px, LineStyle.Solid, Color("#3df3ff"))
                         .borderRadius(10.px)
@@ -84,10 +84,6 @@ fun SettingsPage() {
                         },
             )
 
-            P(attrs = AppStyles.statusText.margin(top = 0.px, bottom = 10.px).toAttrs()) {
-                Text("The base URL is optional and defaults to the server associated with this web instance (assuming there is one).")
-            }
-
             Label(attrs = AppStyles.pageLabel.toAttrs()) { Text("BACKEND BASE URL OVERRIDE (optional)") }
             Input(
                 type = InputType.Text,
@@ -95,7 +91,7 @@ fun SettingsPage() {
                     Modifier
                         .width(100.percent)
                         .padding(10.px, 12.px)
-                        .margin(top = 4.px, bottom = 22.px)
+                        .margin(top = 4.px, bottom = 8.px)
                         .boxSizing(BoxSizing.BorderBox)
                         .border(1.px, LineStyle.Solid, Color("#3df3ff"))
                         .borderRadius(10.px)
@@ -106,6 +102,10 @@ fun SettingsPage() {
                             onInput { baseUrl = it.value }
                         },
             )
+
+            P(attrs = AppStyles.statusText.margin(top = 0.px, bottom = 20.px).toAttrs()) {
+                Text("The base URL is optional and defaults to the server associated with this web instance (assuming there is one).")
+            }
 
             Row {
                 Button(
