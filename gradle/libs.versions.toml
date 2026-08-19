@@ -1,6 +1,6 @@
 [versions]
 jetbrains-compose = "1.11.1"
-http4k = "6.55.0.0"
+http4k = "6.58.0.0"
 kobweb = "0.24.1"
 kotlin = "2.3.21"
 kotlinx-serialization = "1.11.0"
